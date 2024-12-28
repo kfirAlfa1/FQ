@@ -9,18 +9,33 @@ from deep_translator import GoogleTranslator
 
 env_url= "https://k8-shift.tabit-dev.com"
 
-# https://il-shift.tabit-int.com
+
 # https://k8-shift.tabit-dev.com
+# https://k8-shift.tabit-dev.com/admin
+# https://k8-shift.tabit-dev.com/app/system-settings
+
+
+
+
+
+# https://il-shift.tabit-int.com
+# https://il-shift.tabit-int.com/admin
+
+
 
 # https://il-shift.tabit-stage.com/admin
 #https://il-shift.tabit-stage.com
+
+
 days_of_the_week = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+LIST_OF_ROLES=[]
 
 ########################################################################
 
 def get_token():
       global  token
       tok_url = env_url+"/api/auth/token/"
+      tok_data = 
       response = requests.post(tok_url, json=tok_data)
       if response.status_code != 200:
             print(f"get_token returned error: {response.status_code}")
@@ -90,16 +105,35 @@ def return_perrmisions_id (group):
       elif group=='Automation':
             return 6
 
+def change_perrmision_to_english(index):
+  if ReadData.perrmisions_list[index] == 'מטה':
+      ReadData.perrmisions_list[index] = 'Headquarters'
+  elif ReadData.perrmisions_list[index] == 'בעלים':
+                  ReadData.perrmisions_list[index] = 'Owners'
+  elif ReadData.perrmisions_list[index] == 'מנהלים':
+        ReadData.perrmisions_list[index] = 'Managers' 
+  elif ReadData.perrmisions_list[index] == 'מנהל מתלמד':
+                  ReadData.perrmisions_list[index] = 'Junior-Managers'
+  elif ReadData.perrmisions_list[index] == 'מנהלי משמרת':
+        ReadData.perrmisions_list[index] = 'Senior Sub-Managers'  
+  elif ReadData.perrmisions_list[index] == 'סגן מנהל משמרת':
+                  ReadData.perrmisions_list[index] = 'Sub-Managers'
+  elif ReadData.perrmisions_list[index] == 'עובדים':
+        ReadData.perrmisions_list[index] = 'Employees' 
+  elif ReadData.perrmisions_list[index] == 'עובדים עם חיתוך שעון':
+                  ReadData.perrmisions_list[index] = 'Junior Employees' 
+     
 def organize_groups():
     global groups
     groups=[]
     for i in range(len(ReadData.perrmisions_list)):
         perrmisions_id=return_perrmisions_id(ReadData.perrmisions_list[i])
         is_default=return_perrmisions_default(ReadData.perrmisions_list[i])
+        if  ReadData.language != 'he':
+             change_perrmision_to_english(i)
+
         groups.append({
              "name": ReadData.perrmisions_list_names[i],
-             "order": i + 1,
-             #"priority":i + 1,
              "group_id": perrmisions_id,
              "is_default": is_default
               })
@@ -128,6 +162,16 @@ def organize_religions():
     for i in range(len(ReadData.religions_list)):
         religion_id=return_religions_id(ReadData.religions_list[i])
         is_default=return_religions_default(ReadData.religions_list[i])
+        if  ReadData.language != 'he':
+             if ReadData.religions_list_names[i] == 'יהודי':
+                  ReadData.religions_list_names[i] = 'Jewish'
+             elif ReadData.religions_list_names[i] == 'נוצרי':
+                  ReadData.religions_list_names[i] = 'Christian'
+             elif ReadData.religions_list_names[i] == 'מוסלמי':
+                  ReadData.religions_list_names[i] = 'Muslim'  
+             else:
+                   ReadData.religions_list_names[i] = 'Foreign'      
+             
         religions.append({
              "name": ReadData.religions_list_names[i],
              "religion_id": religion_id,
@@ -215,7 +259,6 @@ def create_app():
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
  organize_religions()
  organize_groups() 
-
  create_app_url=env_url+"/api/applications/"
  
  data={
@@ -382,9 +425,11 @@ def create_role(index,roles,app_id):
     json_str = create_role_request.content.decode('utf-8')
     data = json.loads(json_str)
     convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.shifts)
+
     if len(ReadData.locations) !=0 :
       convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.locations)
     print(data)
+    LIST_OF_ROLES.append(data.get("id"))
     
  else:
      print("Error:create_role_request getting ", create_role_request.status_code)
@@ -492,7 +537,7 @@ def create_employee_configuration(index,app_id,attribute,headers):
       data= {
       "attribute":name_of_attribute,
       "application": app_id,
-      "excel": excel,
+      "excel": True,
       "report":report,
       "document":document,
       "is_active":True,
@@ -525,9 +570,32 @@ def create_employee_configuration(index,app_id,attribute,headers):
             print("Error:create_employee_configuration getting ", create_employee_configuration_request.status_code)
             print("Error:create_employee_configuration getting ", create_employee_configuration_request.content)
 
+def create_automation_user():
+  create_employee_url=env_url+"/api/employee-details/"
+  automation_details=[                   
+      {
+      "user_name":"tabit_auto",
+      "password":"tabit"+str(company_id),
+      "group":7,
+      "first_name" :'טאביט' ,
+      "last_name":'אוטומציה',
+      "phone":'0501111111'
+     } ]
+
+  create_employee_url = requests.post(create_employee_url, json=automation_details, headers=headers)
+  if create_employee_url.status_code == 201:
+            json_str = create_employee_url.content.decode('utf-8')
+            data = json.loads(json_str)
+            print(data)
+  else:
+            print("Error:create_employee_url getting ", create_employee_url.status_code)
+            print("Error:create_employee_url getting ", create_employee_url.content)
+
 def create_features(index,app_id):
  if ReadData.features[index] == 'לייבור קוסט - LC':
       Features.create_labor_cost_feature(app_id)
+      create_unplanned_shift(app_id)
+      create_hourly_cost(app_id)
  elif ReadData.features[index] == 'עלויות':
       Features.create_costs_feature(app_id)
  elif   "פיצ'ר ג'ירפות" in ReadData.features[index] :
@@ -544,21 +612,28 @@ def create_features(index,app_id):
  elif  ReadData.features[index] == 'היעדרויות' :
       Features.create_absences_feature(app_id)      
  elif  ReadData.features[index] == 'מסמכים' :
-         Features.create_documents_feature(app_id)      
+         Features.create_documents_feature(app_id)    
+         for item in ReadData.employee_configurations:
+            if item.get("name")== 'תעודת זהות' :
+               ReadData.employee_configurations.remove(item)
+         for item in ReadData.employee_configurations:
+            if item.get("name") == 'תאריך תחילת עבודה' :
+               ReadData.employee_configurations.remove(item)              
  elif  ReadData.features[index] == 'טפסי 101' :
          Features.create_101_feature(app_id)      
  elif  'נונו מימי' in ReadData.features[index] :
           Features.create_multi_rota_feature(app_id,ReadData.locations)  
-
  elif   ReadData.features[index] == 'משימות' :
-         Features.create_tasks_feature(app_id)  
+         Features.create_tasks_feature(app_id)
+ elif   ReadData.features[index] == 'נסיעות' :
+         create_travel_cost(app_id,"עלות נסיעות יומית",'D',1)
+         create_travel_cost(app_id,"עלות חופשי חודשי",'M',2)    
 
 def create_unplanned_shift(app_id):
-      create_unplannedshift_url=env_url+"/api/admin/app/unplannedshifts/"
-      headers = {"Authorization": f"Token {token}"}
-      baltam="בלת''מ"
+      global unplanned_shift_id
+      create_unplannedshift_url=env_url+"/api/unplanned-shifts/"
       data= {
-      "name":baltam,
+      "name":"בלת''מ",
       "application": app_id,
       "type": 1,
       "work_code":0,
@@ -569,6 +644,8 @@ def create_unplanned_shift(app_id):
       if create_unplannedshift_url.status_code == 201:
             json_str = create_unplannedshift_url.content.decode('utf-8')
             data = json.loads(json_str)
+            unplanned_shift_id=[]
+            unplanned_shift_id.append(data.get("id"))
             print(data)
       else:
             print("Error:create_unplannedshift_url getting ", create_unplannedshift_url.status_code)
@@ -602,9 +679,10 @@ def create_clock(app_id):
         print() #No 
  else:
       create_employee_configuration(0,app_id,'מזהה שעון')
- Features.create_clock_feature(app_id)
- create_unplanned_shift(app_id)
- if ReadData.clock == 'טאביט':
+ if ReadData.clock == 'ביומטרי':
+    Features.create_clock_feature(app_id)
+    create_unplanned_shift(app_id)
+ elif ReadData.clock == 'טאביט':
         Features.AUTOMATION=True    
  elif  'אפליקציה' in ReadData.clock:
       if ReadData.permissions_for_web_clock != None: #For part of the groups
@@ -646,29 +724,29 @@ def create_attendance_clock(app_id):
 
 def create_employee(index,headers,employee_details,app_id):
   groups=get_groups(app_id)
-  company=get_company(app_id)
-  create_employee_url=env_url+"/api/users/"
+  create_employee_url=env_url+"/api/employee-details/"
   headers=headers
   temp=employee_details[index]
   user_name=temp["user_name"]
   password=temp["password"]
   first_name=temp["first_name"]
   last_name=temp["last_name"]
+  if last_name == None:
+       last_name=""
   email=  temp["email"] 
   phone_number=   temp["phone_number"]
-  _group =temp["group"]
-  _group=convert_group_name_to_id(_group,groups) 
+  group =temp["group"]
+  group=convert_group_name_to_id(group,groups) 
   data = {
-    "application": app_id,
-    "company":company,
-    "username":user_name,
-    "password":password,
-    "group":_group ,
-    "first_name" : first_name,
-    "last_name":'',
-    "phone":phone_number,
-    "email":email 
-       
+      "application":app_id,
+      "username":user_name,
+      "password":password,
+      "group":group,
+      "first_name" :first_name,
+      "last_name":last_name,
+      "email":email,
+      "phone":phone_number,
+      "id_number":"" 
       }
   create_employee_url = requests.post(create_employee_url, json=data, headers=headers)
   if create_employee_url.status_code == 201:
@@ -690,8 +768,7 @@ def create_report_attribute(app_id,):
      }
  report_attribute_url=requests.post(report_attribute_url, json=data, headers=headers)
  if report_attribute_url.status_code == 200:
-            json_str = report_attribute_url.content.decode('utf-8')
-            data = json.loads(json_str)
+            print(report_attribute_url.content)
  else:
             print("Error:report_attribute_url getting ", report_attribute_url.status_code)
             print("Error:report_attribute_url getting ", report_attribute_url.content)
@@ -815,7 +892,64 @@ def create_automatic_holiday(app_id):
                   print("Error:holiday_url getting ", holiday_url.status_code)
                   print("Error:holiday_url getting ", holiday_url.content) 
         
-   
+def create_hourly_cost(app_id):
+ hourly_cost_url=env_url+"/api/costs/"
+ data= {
+      "name":'עלות שעתית',
+      "application": app_id,
+      "type": 'C',
+      "input_type ":1, #text
+      "order":1,
+      "hourly_daily":'H',
+      "roles": LIST_OF_ROLES,
+     "unplanned_shifts": unplanned_shift_id,
+      "is_active":True,
+      "order":1
+      }
+ hourly_cost_url = requests.post(hourly_cost_url, json=data, headers=headers)
+ if hourly_cost_url.status_code == 201:
+            json_str = hourly_cost_url.content.decode('utf-8')
+            data = json.loads(json_str)
+            print(data)
+ else:
+            print("Error:hourly_cost_url getting ", hourly_cost_url.status_code)
+            print("Error:hourly_cost_url getting ", hourly_cost_url.content)
+
+def create_travel_cost(app_id,name,hourly_daily,order):
+ travel_cost_url=env_url+"/api/costs/"
+ data= {
+      "name":name,
+      "application": app_id,
+      "hourly_daily":hourly_daily,
+      "order":order
+      }
+ travel_cost_url = requests.post(travel_cost_url, json=data, headers=headers)
+ if travel_cost_url.status_code == 201:
+            json_str = travel_cost_url.content.decode('utf-8')
+            data = json.loads(json_str)
+            print(data)
+ else:
+            print("Error:travel_cost_url getting ", travel_cost_url.status_code)
+            print("Error:travel_cost_url getting ", travel_cost_url.content)
+
+def create_report_coulmn(app_id,reports,coulmn_name,name):
+     create_report_coulmn_url=env_url+"/api/reportcolumn/"
+     data= {
+          "name": name,
+          "application": app_id,
+          "reports":reports,
+          "column":coulmn_name,
+          }
+     
+     create_report_coulmn_url = requests.post(create_report_coulmn_url, json=data, headers=headers)
+     if create_report_coulmn_url.status_code == 201:
+               json_str = create_report_coulmn_url.content.decode('utf-8')
+               data = json.loads(json_str)
+               print(data)
+     else:
+               print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.status_code)
+               print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.content)
+
 
 
 #####################################################
@@ -824,68 +958,47 @@ def create_regular_system():
  get_token()
  global headers
  headers = {"Authorization": f"Token {token}"}
-#  create_company()
-#  create_app()
- Cats = Features.get_cats(278)
+ create_company()
+ create_app()
+ Cats = Features.get_cats(app_id)
  headers = {"Authorization": f"Token {token}", "Cats": Cats}
+
+ for i in range(len(ReadData.roles)):
+  create_role(i,ReadData.roles,app_id)
+
+ for i in range(len(ReadData.shifts)):
+  create_shifts(i,ReadData.shifts,app_id)
+
+ for i in range(len(ReadData.requests_limits)):
+  create_request_limits(i,app_id)
+
+ for i in range(len(ReadData.receives_limits)):
+  create_recive_limits(i,app_id)
+
+ create_clock(app_id)
+
+ for i in range(len(ReadData.features)):
+  create_features(i,app_id)
+ if len(ReadData.cutting_hours) != 0:
+   Features.create_cutting_hours_feature(app_id,ReadData.cutting_hours) 
 
  if ReadData.holidays == "כן":
       choose_holiday_area_code()
-      create_automatic_holiday(278)
-      create_shabat(278)
-
-#  for i in range(len(ReadData.roles)):
-#   create_role(i,ReadData.roles,277)
-
-#  for i in range(len(ReadData.shifts)):
-#   create_shifts(i,ReadData.shifts,app_id)
-
-#  for i in range(len(ReadData.requests_limits)):
-#   create_request_limits(i,app_id)
-
-#  for i in range(len(ReadData.receives_limits)):
-#   create_recive_limits(i,app_id)
-
- create_clock(278)
-
-#  for i in range(len(ReadData.features)):
-#   create_features(i,278)
-  
-#  if len(ReadData.cutting_hours) != 0:
-#    Features.create_cutting_hours_feature(278,ReadData.cutting_hours) 
+      create_automatic_holiday(app_id)
+      create_shabat(app_id)
 
 
-#  if ReadData.automatic_holidays_special_cost == "כן":
-#       create_report_attribute(278)
-#       Features.create_special_holiday(278)
-#       print("Report columns")
+ if ReadData.automatic_holidays_special_cost == "כן":
+      create_report_attribute(app_id)
+      Features.create_special_holiday(app_id)
+      create_report_coulmn(app_id,["1","2"],'special_holiday_100',None)
 
-#  for i in range(len(ReadData.employee_configurations)):
-#      create_employee_configuration(i,278,ReadData.employee_configurations[i],headers)
+ for i in range(len(ReadData.employee_configurations)):
+     create_employee_configuration(i,app_id,ReadData.employee_configurations[i],headers)
 
-
-
-
-#       ###### GUI ############
-#       ######################
-#  for i in range(len(ReadData.owner_details)):
-#       create_employee(i,headers,ReadData.owner_details,278)
-
-
-
-      
-# if Features.AUTOMATION == True:
-#      automation_details=[                   
-#       {
-#       "user_name":"tabit_auto",
-#       "password":"tabit"+str(company_id),
-#       "group":7,
-#       "first_name" :'טאביט' ,
-#       "last_name":'אוטומציה',
-#       "phone":'0501111111'
-#      } ]
-
-#      create_employee(0,headers,automation_details)
+ for i in range(len(ReadData.owner_details)):
+      create_employee(i,headers,ReadData.owner_details,app_id)
+    
      
      
 
@@ -916,30 +1029,28 @@ def create_attendance_system():
  
 
 
-     
- 
-
-create_attendance_system()
-#create_regular_system() 
+#create_attendance_system()
 
 
+##### Regular SYSTEM ###
+create_regular_system() 
 
 
 ####################################################
 
 
+# REPORT COLUMNS 
+# empoloyee_configuration -> created but not with all the relevant fileds as true
+# create_user -> created but not with the right gruop, its updating it insted creating a new one,
+# in addition, last name and id must be not None 
 
 
-## FOR MOTTI ##### 
 
-# Locations
 
-#create_unplanned_shift
 
-# ##ASK MOTI WHAT IS DAYS IN CREATE_REQUEST LIMITS
+
+
+
+
+
 # MEASSAGE CONFIGURATIONS T->NOT WORKING -< will be true
-
-
-
-# CREATE EMPLOYEE   
-# REPORT COLUMNS
