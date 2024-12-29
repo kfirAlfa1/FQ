@@ -5,6 +5,14 @@ import json
 import Features
 import WorldTimeZones
 from deep_translator import GoogleTranslator
+from openpyxl import load_workbook
+from openpyxl import Workbook
+import tkinter as tk
+from tkinter import filedialog
+
+
+
+
 
 
 env_url= "https://k8-shift.tabit-dev.com"
@@ -531,6 +539,8 @@ def create_employee_configuration(index,app_id,attribute,headers):
  if attribute != None:
       temp=ReadData.employee_configurations[index]
       name_of_attribute=choose_employee_configuration_field(temp["name"])
+      if name_of_attribute == 'number':
+           create_report_coulmn(app_id,["2"],'number',"מספר עובד לשכר")     
       excel=temp["excel"] 
       report=temp["report"]
       document=temp["document"]
@@ -591,10 +601,12 @@ def create_automation_user():
             print("Error:create_employee_url getting ", create_employee_url.status_code)
             print("Error:create_employee_url getting ", create_employee_url.content)
 
-def create_features(index,app_id):
+def create_features(index,app_id,unplanned_shift_flag):
  if ReadData.features[index] == 'לייבור קוסט - LC':
       Features.create_labor_cost_feature(app_id)
-      create_unplanned_shift(app_id)
+      if  unplanned_shift_flag != True :
+        create_unplanned_shift(app_id)
+        unplanned_shift_flag= True
       create_hourly_cost(app_id)
  elif ReadData.features[index] == 'עלויות':
       Features.create_costs_feature(app_id)
@@ -673,17 +685,22 @@ def create_attendance_unplanned_shift(app_id):
             print("Error:create_unplannedshift_url getting ", create_unplannedshift_url.content)
 
 def create_clock(app_id):
+ global unplanned_shift_flag
+ unplanned_shift_flag=False
  if ReadData.clock == 'ללא שעון':
       return
  if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):
         print() #No 
  else:
       create_employee_configuration(0,app_id,'מזהה שעון')
- if ReadData.clock == 'ביומטרי':
-    Features.create_clock_feature(app_id)
-    create_unplanned_shift(app_id)
- elif ReadData.clock == 'טאביט':
-        Features.AUTOMATION=True    
+ if unplanned_shift_flag==False:
+       create_unplanned_shift(app_id)  
+       unplanned_shift_flag=True
+ Features.create_clock_feature(app_id)
+#  if ReadData.clock == 'ביומטרי':
+#     Features.create_clock_feature(app_id)
+ if ReadData.clock == 'טאביט':
+      Features.create_automation_user(app_id)
  elif  'אפליקציה' in ReadData.clock:
       if ReadData.permissions_for_web_clock != None: #For part of the groups
          convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
@@ -933,13 +950,20 @@ def create_travel_cost(app_id,name,hourly_daily,order):
             print("Error:travel_cost_url getting ", travel_cost_url.content)
 
 def create_report_coulmn(app_id,reports,coulmn_name,name):
-     create_report_coulmn_url=env_url+"/api/reportcolumn/"
-     data= {
-          "name": name,
+     create_report_coulmn_url=env_url+"/api/report-column/"
+     if name == None:
+          data= {
           "application": app_id,
           "reports":reports,
           "column":coulmn_name,
           }
+     else:
+        data= {
+            "name": name,
+            "application": app_id,
+            "reports":reports,
+            "column":coulmn_name,
+            }
      
      create_report_coulmn_url = requests.post(create_report_coulmn_url, json=data, headers=headers)
      if create_report_coulmn_url.status_code == 201:
@@ -951,14 +975,51 @@ def create_report_coulmn(app_id,reports,coulmn_name,name):
                print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.content)
 
 
+###Excel 
+######################################################
+def load_excel_file():
+    global sheet 
+    global sheet2
+    global root
+    file_path = filedialog.askopenfilename(
+    title="Select an Excel file",
+    filetypes=[("Excel files", "*.xlsx;*.xls")]
+    )
+    if file_path:
+        wb = load_workbook(file_path, data_only=True)
+        new_wb = Workbook()
+
+        for idx, sheet_name in enumerate(wb.sheetnames):
+            original_ws = wb[sheet_name]
+            # Create a new sheet for each sheet, except the first one
+            if idx == 0:
+                new_ws = new_wb.active  # Use the default active sheet
+            else:
+                new_ws = new_wb.create_sheet(title=sheet_name)
+            
+            new_ws.title = sheet_name
+
+            for row in original_ws.iter_rows(values_only=True):
+                new_ws.append(row)
+
+        new_file = 'values_only_file.xlsx'
+        new_wb.save(new_file)
+
+        # Access the first and second sheets
+        sheet = new_wb.worksheets[0]
+        sheet2 = new_wb.worksheets[1]
+        root.destroy()
+
+
 
 #####################################################
 
-def create_regular_system():
+def create_system(two_systems_boolean):
  get_token()
  global headers
  headers = {"Authorization": f"Token {token}"}
- create_company()
+ if two_systems_boolean == False:
+     create_company()
  create_app()
  Cats = Features.get_cats(app_id)
  headers = {"Authorization": f"Token {token}", "Cats": Cats}
@@ -978,7 +1039,7 @@ def create_regular_system():
  create_clock(app_id)
 
  for i in range(len(ReadData.features)):
-  create_features(i,app_id)
+  create_features(i,app_id,unplanned_shift_flag)
  if len(ReadData.cutting_hours) != 0:
    Features.create_cutting_hours_feature(app_id,ReadData.cutting_hours) 
 
@@ -986,7 +1047,6 @@ def create_regular_system():
       choose_holiday_area_code()
       create_automatic_holiday(app_id)
       create_shabat(app_id)
-
 
  if ReadData.automatic_holidays_special_cost == "כן":
       create_report_attribute(app_id)
@@ -1000,10 +1060,16 @@ def create_regular_system():
       create_employee(i,headers,ReadData.owner_details,app_id)
     
      
-     
+root = tk.Tk()
+root.title("FQ system")
+root.geometry("400x250")
+load_button = tk.Button(root, text="Load Excel File", command=load_excel_file)
+load_button.pack(pady=50)
+root.mainloop()
 
 
 ##### ATTENDANCE SYSTEM ###
+
 def create_attendance_system():
  get_token()
  global headers
@@ -1029,28 +1095,22 @@ def create_attendance_system():
  
 
 
-#create_attendance_system()
-
 
 ##### Regular SYSTEM ###
-create_regular_system() 
-
-
-####################################################
-
-
-# REPORT COLUMNS 
-# empoloyee_configuration -> created but not with all the relevant fileds as true
-# create_user -> created but not with the right gruop, its updating it insted creating a new one,
-# in addition, last name and id must be not None 
+def create_regular_system():
+ ReadData.read_data_for_regular_system(sheet)
+ create_system(False)
 
 
 
+##### 2 applications with one company SYSTEM ###
+
+def create_two_systems_with_one_company():
+  ReadData.read_data_for_regular_system(sheet)
+  create_system(False) 
+  ReadData.read_data_for_regular_system(sheet2)
+  create_system(True) 
 
 
 
-
-
-
-
-# MEASSAGE CONFIGURATIONS T->NOT WORKING -< will be true
+create_regular_system()
