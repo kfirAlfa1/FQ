@@ -380,7 +380,7 @@ def create_101_feature(app_id):
         }
     create_employee_configuration_request = requests.post(create_employee_configuration_url, json=data, headers=headers)
     if create_employee_configuration_request.status_code == 201:
-          print(" primary_role employee configureaiton created sucssefuly")
+          print(" payroll_form employee configureaiton created sucssefuly")
     else:
          print(create_employee_configuration_request.status_code )
 
@@ -449,13 +449,20 @@ def create_multi_rota_feature(app_id,locations):
 
 def create_report_coulmn(app_id,reports,coulmn_name,name):
     get_cats(app_id)
-    create_report_coulmn_url=env_url+"api/reportcolumn/"
-    data= {
-        "name": name,
+    create_report_coulmn_url=env_url+"api/report-column/"
+    if name == None:
+     data= {
         "application": app_id,
         "reports":reports,
         "column":coulmn_name,
         }
+    else:
+        data= {
+            "name": name,
+            "application": app_id,
+            "reports":reports,
+            "column":coulmn_name,
+            }
     
     create_report_coulmn_url = requests.post(create_report_coulmn_url, json=data, headers=headers)
     if create_report_coulmn_url.status_code == 201:
@@ -497,11 +504,3 @@ def delete_documents_feature(app_id):
             if group_id in high_groups_id:
               send_application_group_attribute_request(app_id,group_id,155,"False")# create_documents attribute
               send_application_group_attribute_request(app_id,group_id,156,"False")# edit_documents attribute
-
-
-
-
-
-
-
-#create_report_coulmn
