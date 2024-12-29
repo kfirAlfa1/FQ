@@ -3,59 +3,12 @@ from openpyxl import Workbook
 import tkinter as tk
 from tkinter import filedialog
 
-sheet = None
+
 general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers','Senior Sub-Managers','Sub-Managers','Employees','Junior Employees']
 days_of_week=['א','ב','ג','ד','ה','ו','ש']
 days_of_week_shabat=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת']
 
-###############################################
-perrmisions_list_names=[]
-perrmisions_list=[]
-religions_list_names=[]
-religions_list=[]
-locations=[]
-owner_details=[]
-roles=[]
-shifts=[]
-requests_limits=[]
-receives_limits=[]
-employee_configurations=[]
-features=[]
-#################################################
 
-
-def load_excel_file():
-    global sheet 
-    global sheet2
-    global root
-    file_path = filedialog.askopenfilename(
-    title="Select an Excel file",
-    filetypes=[("Excel files", "*.xlsx;*.xls")]
-    )
-    if file_path:
-        wb = load_workbook(file_path, data_only=True)
-        new_wb = Workbook()
-
-        for idx, sheet_name in enumerate(wb.sheetnames):
-            original_ws = wb[sheet_name]
-            # Create a new sheet for each sheet, except the first one
-            if idx == 0:
-                new_ws = new_wb.active  # Use the default active sheet
-            else:
-                new_ws = new_wb.create_sheet(title=sheet_name)
-            
-            new_ws.title = sheet_name
-
-            for row in original_ws.iter_rows(values_only=True):
-                new_ws.append(row)
-
-        new_file = 'values_only_file.xlsx'
-        new_wb.save(new_file)
-
-        # Access the first and second sheets
-        sheet = new_wb.worksheets[0]
-        sheet2 = new_wb.worksheets[1]
-        root.destroy()
 
 #Compeny and app details 
 def get_application():
@@ -641,14 +594,37 @@ def get_cutting_hours():
      return "No cutting hours"
 
 
-root = tk.Tk()
-root.title("FQ system")
-root.geometry("400x250")
-load_button = tk.Button(root, text="Load Excel File", command=load_excel_file)
-load_button.pack(pady=50)
-root.mainloop()
+def read_data_for_regular_system(sheet_from_API):
+    global sheet
+    sheet=sheet_from_API
 
-def read_data_for_regular_system():
+    ###############################################
+    global perrmisions_list_names
+    global perrmisions_list
+    global religions_list_names
+    global religions_list
+    global locations
+    global  owner_details
+    global roles
+    global shifts
+    global requests_limits
+    global   receives_limits
+    global employee_configurations
+    global features
+    
+    perrmisions_list_names=[]
+    perrmisions_list=[]
+    religions_list_names=[]
+    religions_list=[]
+    locations=[]
+    owner_details=[]
+    roles=[]
+    shifts=[]
+    requests_limits=[]
+    receives_limits=[]
+    employee_configurations=[]
+    features=[]
+#################################################
     get_application()
     get_owners()
     get_roles()
@@ -664,7 +640,6 @@ def read_data_for_regular_system():
 
 
 
-read_data_for_regular_system()
 
 
 
@@ -672,74 +647,3 @@ read_data_for_regular_system()
 
 
 
-
-# def print_compeny_details():
-#     print('Compeny details')
-#     print('company name')
-#     print(company_name)
-#     print('app name')
-#     print(app_name)
-#     print('display name')
-#     print(display_name)
-#     print('language')
-#     print(language)
-#     print('country code')
-#     print(country_code)
-#     print('time zone')
-#     print(time_zone)
-#     print('last hour for subbmit shifts')
-#     print(last_hour_for_subbmit_shifts)
-#     print('account number')
-#     print(account_number)
-#     print('first day of week')
-#     print(first_day_of_week)
-#     print('first day of weekend')
-#     print(first_day_of_weekend)
-#     print('last day for subbmit shifts')
-#     print(last_day_for_subbmit_shifts)
-
-# def print_perrmisions_list_names():
-#     print('Perrmisions names')
-#     print(perrmisions_list_names)
-
-# def print_religions():
-#  print("Religions")
-#  print(religions_list_names)
-
-# def print_roles():
-#     print('Roles')
-#     print(roles)
-
-# def print_shifts():
-#  print("Shifts")
-#  print(shifts)
-
-# def print_receives_limits():
-#  print("Receives limits")
-#  for key,value in receives_limits.items():
-#      print(f"Key = {key} and value: {value}")
-
-# def print_employee_configurations():
-#  print("Employee configurations")
-#  for key,value in employee_configurations.items():
-#      print(f"Key = {key} and value: {value}")
-
-# def print_clock():
-#  print("Clock")
-#  print(clock)
-
-# def print_features():
-#  print("Features")
-#  print(features)
-
-# #print_shifts()
-#print_employee_configurations()
-#print_compeny_details()
-# print_perrmisions_list_names()
-# print_religions()
-# print_roles()
-# print_shifts()
-# print_clock()
-# print_receives_limits()
-# print_employee_configurations()
-#print_features()
