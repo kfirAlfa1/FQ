@@ -18,10 +18,11 @@ HOURLY_COST=False
 high_groups_id=[]
 low_groups_id=[]
 
+
 def get_token():
       global  token
       tok_url = env_url+"api/auth/token/"
-      tok_data =
+      tok_data = {"username": "kfira", "password": "159753ASDF", "company": 1}
       response = requests.post(tok_url, json=tok_data)
       if response.status_code == 200:  
         token = response.json().get('token')
@@ -86,15 +87,6 @@ def convert_role_name_to_id(role_name,role_id,list):
             if roles[j]==role_name:
                  roles[j]=role_id
                  break  
-
-# get_token()
-# cats=get_cats(app_id)
-# headers = {"Authorization": f"Token {token}", "Cats": cats}
-
-
-# Organize groups to high groups an low groups
-
-
 
 def organize_groups(groups):
     global automation_group
@@ -324,6 +316,7 @@ def create_absences_feature(app_id):
             send_application_group_attribute_request(app_id,group_id,130,"2")# Show Absence Reasons
             send_application_group_attribute_request(app_id,group_id,54,"True") #Update Absence Reasons  
             send_application_group_attribute_request(app_id,group_id,53,"True") #absence report
+    create_report_coulmn(app_id,['1'],'absence_0',None)
 
 def create_documents_feature(app_id):
     groups=get_groups(app_id)
@@ -344,7 +337,6 @@ def create_documents_feature(app_id):
          attribute=  'work_start_date' 
      create_employee_configuration_url=env_url+"api/employee-configuration/"
      data= {
-         #"name":'', WAIT FOR MOTI CODE
         "attribute":attribute,
         "application": app_id,
         "mandatory":False,
@@ -355,7 +347,7 @@ def create_documents_feature(app_id):
         }
      create_employee_configuration_request = requests.post(create_employee_configuration_url, json=data, headers=headers)
      if create_employee_configuration_request.status_code == 201:
-          print(attribute+" employee configureaiton created sucssefuly")
+          print(create_employee_configuration_request.content)
      else:
          print(create_employee_configuration_request.status_code )
          print(create_employee_configuration_request.content )
@@ -446,7 +438,6 @@ def create_multi_rota_feature(app_id,locations):
             print("Error:create_compeny_request getting ", create_location_url.status_code)
             print("Error:create_compeny_request getting ", create_location_url.content)
 
-
 def create_report_coulmn(app_id,reports,coulmn_name,name):
     get_cats(app_id)
     create_report_coulmn_url=env_url+"api/report-column/"
@@ -479,7 +470,6 @@ def create_cutting_hours_feature(app_id,cutting_hours):
         attribute=item.get("attribute")
         value= item.get("value")
         send_application_group_attribute_request(app_id,group_id,attribute,value)# All cutting houres
-
 
 
 ############ Delete ############
