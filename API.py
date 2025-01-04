@@ -14,7 +14,6 @@ from tkinter import filedialog
 
 
 
-
 env_url= "https://k8-shift.tabit-dev.com"
 
 
@@ -25,9 +24,9 @@ env_url= "https://k8-shift.tabit-dev.com"
 
 
 
-
 # https://il-shift.tabit-int.com
 # https://il-shift.tabit-int.com/admin
+
 
 
 
@@ -43,7 +42,7 @@ LIST_OF_ROLES=[]
 def get_token():
       global  token
       tok_url = env_url+"/api/auth/token/"
-      tok_data = 
+      tok_data = {"username": "kfira", "password": "159753ASDF", "company": 1}
       response = requests.post(tok_url, json=tok_data)
       if response.status_code != 200:
             print(f"get_token returned error: {response.status_code}")
@@ -634,12 +633,14 @@ def create_features(index,app_id,unplanned_shift_flag):
  elif  ReadData.features[index] == 'טפסי 101' :
          Features.create_101_feature(app_id)      
  elif  'נונו מימי' in ReadData.features[index] :
-          Features.create_multi_rota_feature(app_id,ReadData.locations)  
+          if len(ReadData.locations) != 0:
+           Features.create_multi_rota_feature(app_id,ReadData.locations)  
  elif   ReadData.features[index] == 'משימות' :
          Features.create_tasks_feature(app_id)
  elif   ReadData.features[index] == 'נסיעות' :
          create_travel_cost(app_id,"עלות נסיעות יומית",'D',1)
-         create_travel_cost(app_id,"עלות חופשי חודשי",'M',2)    
+         create_travel_cost(app_id,"עלות חופשי חודשי",'M',2) 
+         create_report_coulmn(app_id,["1","2"],'auto_travel_cost',None)  
 
 def create_unplanned_shift(app_id):
       global unplanned_shift_id
@@ -697,8 +698,8 @@ def create_clock(app_id):
        create_unplanned_shift(app_id)  
        unplanned_shift_flag=True
  Features.create_clock_feature(app_id)
-#  if ReadData.clock == 'ביומטרי':
-#     Features.create_clock_feature(app_id)
+ if ReadData.clock == 'ביומטרי':
+    Features.create_clock_feature(app_id)
  if ReadData.clock == 'טאביט':
       Features.create_automation_user(app_id)
  elif  'אפליקציה' in ReadData.clock:
@@ -774,8 +775,8 @@ def create_employee(index,headers,employee_details,app_id):
             print("Error:create_employee_url getting ", create_employee_url.status_code)
             print("Error:create_employee_url getting ", create_employee_url.content)
 
-def create_report_attribute(app_id,):
- report_attribute_url= env_url+"/api/report-attribute"
+def create_report_attribute(app_id):
+ report_attribute_url= env_url+"/api/report-attribute/"
  headers = {"Authorization": f"Token {token}"}
  data={
           "application" : app_id,
@@ -784,7 +785,7 @@ def create_report_attribute(app_id,):
           "value": 2.0      
      }
  report_attribute_url=requests.post(report_attribute_url, json=data, headers=headers)
- if report_attribute_url.status_code == 200:
+ if report_attribute_url.status_code == 201:
             print(report_attribute_url.content)
  else:
             print("Error:report_attribute_url getting ", report_attribute_url.status_code)
@@ -938,6 +939,7 @@ def create_travel_cost(app_id,name,hourly_daily,order):
       "name":name,
       "application": app_id,
       "hourly_daily":hourly_daily,
+      "type":'V',
       "order":order
       }
  travel_cost_url = requests.post(travel_cost_url, json=data, headers=headers)
@@ -1010,8 +1012,6 @@ def load_excel_file():
         sheet2 = new_wb.worksheets[1]
         root.destroy()
 
-
-
 #####################################################
 
 def create_system(two_systems_boolean):
@@ -1056,10 +1056,10 @@ def create_system(two_systems_boolean):
  for i in range(len(ReadData.employee_configurations)):
      create_employee_configuration(i,app_id,ReadData.employee_configurations[i],headers)
 
- for i in range(len(ReadData.owner_details)):
-      create_employee(i,headers,ReadData.owner_details,app_id)
+#  for i in range(len(ReadData.owner_details)):
+#       create_employee(i,headers,ReadData.owner_details,app_id)
     
-     
+
 root = tk.Tk()
 root.title("FQ system")
 root.geometry("400x250")
@@ -1093,15 +1093,10 @@ def create_attendance_system():
    Features.create_cutting_hours_feature(278,ReadData.cutting_hours) 
  create_attendance_clock(app_id)
  
-
-
-
 ##### Regular SYSTEM ###
 def create_regular_system():
  ReadData.read_data_for_regular_system(sheet)
  create_system(False)
-
-
 
 ##### 2 applications with one company SYSTEM ###
 
@@ -1109,8 +1104,10 @@ def create_two_systems_with_one_company():
   ReadData.read_data_for_regular_system(sheet)
   create_system(False) 
   ReadData.read_data_for_regular_system(sheet2)
-  create_system(True) 
+  if len (ReadData.shifts) != 0:   
+   create_system(True) 
 
 
 
-create_regular_system()
+
+create_two_systems_with_one_company()
