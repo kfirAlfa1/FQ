@@ -1,8 +1,5 @@
-from openpyxl import load_workbook
-from openpyxl import Workbook
-import tkinter as tk
-from tkinter import filedialog
 
+import sys
 
 general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers','Senior Sub-Managers','Sub-Managers','Employees','Junior Employees']
 days_of_week=['א','ב','ג','ד','ה','ו','ש']
@@ -134,7 +131,8 @@ def get_roles():
             print(sheet.cell(row=i, column=8).value)
             print("Error!!! This role is allready in the list!!!")
             break
-   
+
+# 1- Checking if the total number of shifts is correct
 def get_shifts():
     i = 4
     j = 9
@@ -143,7 +141,7 @@ def get_shifts():
     while flag:
         roles_per_shift = []  
         
-        if sheet.cell(row=i, column=j).value is None or sheet.cell(row=i, column=j).value =='':
+        if sheet.cell(row=i, column=j).value is None or sheet.cell(row=i, column=j).value =='' or sheet.cell(row=i, column=j).value == "משמרת1":
             flag = False
             break  
 
@@ -159,17 +157,35 @@ def get_shifts():
              loop_on_roles+=2 
 
         shifts.append(
-            {"name":shift_name,
+            {
+             "name":shift_name,
              "roles":roles_per_shift,
              "continuously":continuously
              })
         j += 1 
         i = 4
+    i=5
+    j=6
+    if sheet.cell(row=i, column=j).value == "רשימת משמרות":
+        number_of_shifts=0
+        while sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value != '':
+            i+=1
+            if sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value != '':
+                number_of_shifts+=1
+        if len(shifts)== number_of_shifts:
+            print()
+        else:
+            print("Number of shifts is not match!!")
+            quit()
+
+    else:
+        print("couldent find validation on shifts") 
 
 def get_locations():
  i=8
  j=8
- if sheet.cell(row=i, column=j).value == None:
+ if sheet.cell(row=i, column=j).value == None and i==8:
+     locations.clear()
      return "No locations"
  while sheet.cell(row=i, column=j).value != None:
         name_of_location= sheet.cell(row=i, column=j).value
@@ -292,6 +308,9 @@ def get_receives_limits():
         if sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value !=''and 'הגדרת דוחות' != sheet.cell(row=i, column=1).value:
          limit_name = sheet.cell(row=i, column=j).value 
          shift_for_limit=sheet.cell(row=i, column=j+1).value
+         if shift_for_limit == None or shift_for_limit =='':
+             print("Error, coludent find shifts for limits") 
+             sys.exit()
          if ',' in shifts or '/'in shifts:
           shift_for_limit = split_shifts_for_limits(shift_for_limit)     
          elif shift_for_limit == "כולם":
@@ -306,7 +325,7 @@ def get_receives_limits():
                     break
          if shift_daily == None:
              print("Error, coludent find shifts for limits") 
-             quit
+             sys.exit()
          
          scala=sheet.cell(row=i, column=j+2).value
          if '-' in scala:
@@ -401,7 +420,9 @@ def get_holidays():
  while sheet.cell(row=i, column=j).value != '''פיצ'רים נוספים'''and sheet.cell(row=i, column=j).value !='הגדרת חגים וימי מנוחה':
   i+=1
   if sheet.cell(row=i, column=j).value =='חוקי עבודה':
-     return "Error, no holidays!!"
+     print("Error, no holidays!!")
+     quit 
+      
   if sheet.cell(row=i, column=j).value =='הגדרת חגים וימי מנוחה':
       i+=1
       j+=1
@@ -593,7 +614,6 @@ def get_cutting_hours():
  else:
      return "No cutting hours"
 
-
 def read_data_for_regular_system(sheet_from_API):
     global sheet
     sheet=sheet_from_API
@@ -640,10 +660,73 @@ def read_data_for_regular_system(sheet_from_API):
 
 
 
+# def print_compeny_details():
+#     print('Compeny details')
+#     print('company name')
+#     print(company_name)
+#     print('app name')
+#     print(app_name)
+#     print('display name')
+#     print(display_name)
+#     print('language')
+#     print(language)
+#     print('country code')
+#     print(country_code)
+#     print('time zone')
+#     print(time_zone)
+#     print('last hour for subbmit shifts')
+#     print(last_hour_for_subbmit_shifts)
+#     print('account number')
+#     print(account_number)
+#     print('first day of week')
+#     print(first_day_of_week)
+#     print('first day of weekend')
+#     print(first_day_of_weekend)
+#     print('last day for subbmit shifts')
+#     print(last_day_for_subbmit_shifts)
 
+# def print_perrmisions_list_names():
+#     print('Perrmisions names')
+#     print(perrmisions_list_names)
 
+# def print_religions():
+#  print("Religions")
+#  print(religions_list_names)
 
+# def print_roles():
+#     print('Roles')
+#     print(roles)
 
+# def print_shifts():
+#  print("Shifts")
+#  print(shifts)
 
+# def print_receives_limits():
+#  print("Receives limits")
+#  for key,value in receives_limits.items():
+#      print(f"Key = {key} and value: {value}")
 
+# def print_employee_configurations():
+#  print("Employee configurations")
+#  for key,value in employee_configurations.items():
+#      print(f"Key = {key} and value: {value}")
 
+# def print_clock():
+#  print("Clock")
+#  print(clock)
+
+# def print_features():
+#  print("Features")
+#  print(features)
+
+# #print_shifts()
+#print_employee_configurations()
+#print_compeny_details()
+# print_perrmisions_list_names()
+# print_religions()
+# print_roles()
+# print_shifts()
+# print_clock()
+# print_receives_limits()
+# print_employee_configurations()
+#print_features()
