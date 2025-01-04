@@ -42,7 +42,7 @@ LIST_OF_ROLES=[]
 def get_token():
       global  token
       tok_url = env_url+"/api/auth/token/"
-      tok_data = {"username": "kfira", "password": "159753ASDF", "company": 1}
+      tok_data = {"username": "", "password": "", "company":}
       response = requests.post(tok_url, json=tok_data)
       if response.status_code != 200:
             print(f"get_token returned error: {response.status_code}")
