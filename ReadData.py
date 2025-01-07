@@ -6,7 +6,6 @@ days_of_week=['א','ב','ג','ד','ה','ו','ש']
 days_of_week_shabat=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת']
 
 
-
 #Compeny and app details 
 def get_application():
     global app_name
@@ -120,7 +119,9 @@ def get_owners():
 def get_roles():
  i=7
  if sheet.cell(row=i, column=8).value == None:
-     print("Error!!! no roles found")
+     print("ReadData")
+     print("No roles found")
+     print ("i = "+str(i)+ " j=8")
      quit
  while sheet.cell(row=i, column=8).value != None:
         if sheet.cell(row=i, column=8).value not in roles:
@@ -140,12 +141,12 @@ def get_shifts():
 
     while flag:
         roles_per_shift = []  
-        
         if sheet.cell(row=i, column=j).value is None or sheet.cell(row=i, column=j).value =='' or sheet.cell(row=i, column=j).value == "משמרת1":
             flag = False
             break  
 
         shift_name = sheet.cell(row=i, column=j).value 
+        shift_name=shift_name.strip()
         continuously=sheet.cell(row=i+2, column=j).value
         loop_on_roles=i+3
         for counter in range(len(roles)):
@@ -189,6 +190,7 @@ def get_locations():
      return "No locations"
  while sheet.cell(row=i, column=j).value != None:
         name_of_location= sheet.cell(row=i, column=j).value
+        name_of_location=name_of_location.strip()
         roles_per_location=[]
         role = sheet.cell(row=i-1, column=j).value
         roles_per_location.append(role)
@@ -310,10 +312,12 @@ def get_receives_limits():
          shift_for_limit=sheet.cell(row=i, column=j+1).value
          if shift_for_limit == None or shift_for_limit =='':
              print("Error, coludent find shifts for limits") 
+             print("i="+str(i)+" , j = "+ str(j))
              sys.exit()
+         shift_for_limit=shift_for_limit.strip()
          if ',' in shifts or '/'in shifts:
           shift_for_limit = split_shifts_for_limits(shift_for_limit)     
-         elif shift_for_limit == "כולם":
+         elif shift_for_limit == "כולם" or shift_for_limit == "כל המשמרות" :
              shift_for_limit = [item["name"] for item in shifts if "name" in item]
          else:
             for t in range(len(shifts)):
@@ -395,7 +399,8 @@ def get_employee_configurations_fields():
             j=1 
             i+=1
             continue
-            
+
+         configuration_name=configuration_name.strip()  
          employee_configurations.append(
             {
                 "name":configuration_name,
@@ -427,6 +432,8 @@ def get_holidays():
       i+=1
       j+=1
       shabat=sheet.cell(row=i, column=j).value
+      shabat=shabat.strip()
+      print(shabat)
       if shabat == 'שנתי':
             t=j 
             while sheet.cell(row=i, column=t).value != "יום התחלה" and t<20:
@@ -450,7 +457,7 @@ def get_holidays():
                 "special_type":"AS",
                 "type":"R"
             }     
-      if shabat == 'חורף/קיץ':
+      if shabat == 'חורף/קיץ' or shabat == "חורף / קיץ":
             shabat=[]
             t=j 
             while sheet.cell(row=i, column=t).value != "יום התחלה" and t<20:
@@ -467,9 +474,10 @@ def get_holidays():
                     period='S'
                 shabat_start_day=convert_days_for_shabat(sheet.cell(row=i, column=t).value)
                 shabat_start_hour=sheet.cell(row=i+1, column=t).value
-                shabat_end_day=sheet.cell(row=i+2, column=t).value
+                shabat_end_day=convert_days_for_shabat(sheet.cell(row=i+2, column=t).value)
                 shabat_end_hour=sheet.cell(row=i+3, column=t).value  
-                shabat.append = [{  
+                shabat.append(
+                {  
                     "name":"שבת",
                     "start_day":shabat_start_day,
                     "start_time":shabat_start_hour,
@@ -479,10 +487,13 @@ def get_holidays():
                     "religions":[1],
                     "special_type":"AS",
                     "type":"R"
-                } ]           
+                }  )         
       holidays=sheet.cell(row=i+1, column=j).value
       automatic_holidays_special_cost=sheet.cell(row=i+2, column=j).value
       holidays_area=sheet.cell(row=i+3, column=j).value
+      if holidays =="כן" or shabat == "אוטומטי":
+          if holidays_area == None :
+              print("Error! There is automatic holiday or Shabat and there is no area code")
       return
 
 def get_clock():
@@ -657,76 +668,3 @@ def read_data_for_regular_system(sheet_from_API):
     get_locations()
     get_cutting_hours()
     get_clock()
-
-
-
-# def print_compeny_details():
-#     print('Compeny details')
-#     print('company name')
-#     print(company_name)
-#     print('app name')
-#     print(app_name)
-#     print('display name')
-#     print(display_name)
-#     print('language')
-#     print(language)
-#     print('country code')
-#     print(country_code)
-#     print('time zone')
-#     print(time_zone)
-#     print('last hour for subbmit shifts')
-#     print(last_hour_for_subbmit_shifts)
-#     print('account number')
-#     print(account_number)
-#     print('first day of week')
-#     print(first_day_of_week)
-#     print('first day of weekend')
-#     print(first_day_of_weekend)
-#     print('last day for subbmit shifts')
-#     print(last_day_for_subbmit_shifts)
-
-# def print_perrmisions_list_names():
-#     print('Perrmisions names')
-#     print(perrmisions_list_names)
-
-# def print_religions():
-#  print("Religions")
-#  print(religions_list_names)
-
-# def print_roles():
-#     print('Roles')
-#     print(roles)
-
-# def print_shifts():
-#  print("Shifts")
-#  print(shifts)
-
-# def print_receives_limits():
-#  print("Receives limits")
-#  for key,value in receives_limits.items():
-#      print(f"Key = {key} and value: {value}")
-
-# def print_employee_configurations():
-#  print("Employee configurations")
-#  for key,value in employee_configurations.items():
-#      print(f"Key = {key} and value: {value}")
-
-# def print_clock():
-#  print("Clock")
-#  print(clock)
-
-# def print_features():
-#  print("Features")
-#  print(features)
-
-# #print_shifts()
-#print_employee_configurations()
-#print_compeny_details()
-# print_perrmisions_list_names()
-# print_religions()
-# print_roles()
-# print_shifts()
-# print_clock()
-# print_receives_limits()
-# print_employee_configurations()
-#print_features()
