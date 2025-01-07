@@ -10,8 +10,8 @@ create_application_group_feature_url=env_url+"api/application-group-feature/"
 create_application_group_attribute_url=env_url+"api/application-group-attribute/"
 create_messages_configuration_url=env_url+"api/messages-configuration/"
 create_location_url =env_url+"api/location/"
-temp_high_groups=["Headquarters","Owners","Managers","Junior-Managers"]
-temp_low_groups=["Senior Sub-Managers","Senior Employees","Employees","Junior Employees"]
+temp_high_groups=["Headquarters","Owners","Managers"]
+temp_low_groups=["Junior-Managers","Senior Sub-Managers","Senior Employees","Employees","Junior Employees"]
 CLOCK = False
 AUTOMATION=False
 HOURLY_COST=False
@@ -22,7 +22,7 @@ low_groups_id=[]
 def get_token():
       global  token
       tok_url = env_url+"api/auth/token/"
-      tok_data = {"username": "", "password": "", "company": }
+      tok_data = {"username": "", "password": "", "company":}
       response = requests.post(tok_url, json=tok_data)
       if response.status_code == 200:  
         token = response.json().get('token')
@@ -89,7 +89,7 @@ def convert_role_name_to_id(role_name,role_id,list):
                  break  
 
 def organize_groups(groups):
-    global automation_group
+    global automation_group 
     automation_group=False
     for dictionary in groups:
         if dictionary.get("original_name") in temp_high_groups and dictionary.get("id") not in high_groups_id:
@@ -385,29 +385,9 @@ def create_tasks_feature(app_id):
             send_application_group_feature_request(app_id,group_id,40,True)# Tasks feature 
             if group_id in high_groups_id:
              send_application_group_attribute_request(app_id,group_id,192,"True")# tasks_creator attribute
-    create_employee_configuration_url=env_url+"api/employee-configuration/"
-    data= {
-        "attribute":'primary_role',
-        "application": app_id,
-        "mandatory":True,
-        "excel": True,
-        "report":False,
-        "document":False,
-        "is_active":True
-        }
-    create_employee_configuration_request = requests.post(create_employee_configuration_url, json=data, headers=headers)
-    if create_employee_configuration_request.status_code == 201:
-          print(" primary_role employee configureaiton created sucssefuly")
-    else:
-         print(create_employee_configuration_request.status_code )
+
     #Moti said that he will make al the messages_configurations as ture
 
-    # send_messages_configuration_request(app_id,"task_notify_before_start",True,True,120)
-    # send_messages_configuration_request(app_id,"task_notify_before_end",True,True,120)
-    # send_messages_configuration_request(app_id,"task_notify_on_tag",True,True,"")
-    # # print("messages_configuration_request -> task_notify_before_start")
-    # # print("messages_configuration_request -> task_notify_before_end")
-    # # print("messages_configuration_request -> task_notify_on_tag")
 
 # נונו מימי NONO MIMI
 def create_multi_rota_feature(app_id,locations):
@@ -417,8 +397,8 @@ def create_multi_rota_feature(app_id,locations):
         original_name=dictionary.get("original_name")
         if original_name != "Automation":
             send_application_group_attribute_request(app_id,group_id,162,"True")# multi_rota attribute 
-    create_location_url = env_url+"api/locations/"
     for i in range(len(locations)):
+        create_location_url = env_url+"api/locations/"
         temp=locations[i]
         name_of_location= temp["name"]
         roles_for_location= temp["roles"]
