@@ -1,5 +1,6 @@
 import requests
 import json
+import sys
 
 
 
@@ -22,7 +23,7 @@ low_groups_id=[]
 def get_token():
       global  token
       tok_url = env_url+"api/auth/token/"
-      tok_data = {"username": "", "password": "", "company":}
+      tok_data = {"username": "kfira", "password": "159753ASDF", "company": 1}
       response = requests.post(tok_url, json=tok_data)
       if response.status_code == 200:  
         token = response.json().get('token')
@@ -162,12 +163,16 @@ def send_messages_configuration_request(app_id, name,in_app,notification,value):
         return error_message
 
 def create_special_holiday(app_id):
+   get_cats(app_id)
+   #get_token(app_id)
    groups= get_groups(app_id)
    organize_groups(groups)
    for i in range((len(high_groups_id))):
     send_application_group_attribute_request(app_id,high_groups_id[i],101,"True")#	Special_holiday
 
 def create_clock_feature(app_id):
+    get_cats(app_id)
+   #get_token()
     global CLOCK
     groups= get_groups(app_id)
     if CLOCK == False:
@@ -177,48 +182,86 @@ def create_clock_feature(app_id):
             send_application_group_feature_request(app_id,group_id,14,True)# clock feature 
     CLOCK =True
 
-def create_web_clock_attribute(app_id,groups):
-    if CLOCK == True:
-        for dictionary in groups:
-            group_id=dictionary.get("id")
-            original_name=dictionary.get("original_name")
-            if original_name != "Automation":
-               send_application_group_feature_request(app_id,group_id,21,True)# web_clock attribute 
-    else:
-        create_clock_feature(app_id)
-        create_web_clock_attribute(app_id,groups) ################# QA
+def create_web_clock_attribute(app_id, permissions_for_web_clock):
+    get_cats(app_id)
+    if CLOCK:
+        if isinstance(permissions_for_web_clock, dict):
+            for dictionary in permissions_for_web_clock.values():  # Ensure iterating over values
+                group_id = dictionary.get("id") or dictionary.get("group_id")  # Get group_id safely
+                original_name = dictionary.get("original_name", dictionary["name"])  # Use default if missing
+                if original_name != "Automation":
+                    send_application_group_attribute_request(app_id, group_id, 21, "True")  # Web clock attribute 
 
-def create_install_clock_attribute(app_id,groups):
-    if CLOCK == True:
-        for dictionary in groups:
-            group_id=dictionary.get("id")
-            original_name=dictionary.get("original_name")
-            if original_name != "Automation":
-               send_application_group_feature_request(app_id,group_id,42,True)# install_clock attribute 
-    else:
+        elif isinstance(permissions_for_web_clock, list):
+            if all(isinstance(item, int) for item in permissions_for_web_clock):
+                for group_id in permissions_for_web_clock:
+                    send_application_group_attribute_request(app_id, group_id, 21, "True")  # Reports cost
+            else:
+                print("Error!!")
+                print("Couldn't find permissions for clock ")
+                print("Features")
+                sys.exit()
+
+    else: 
         create_clock_feature(app_id)
-        create_install_clock_attribute(app_id,groups) ################# QA
+        if not hasattr(create_web_clock_attribute, "retry"):
+            create_web_clock_attribute.retry = True  # Prevent infinite recursion
+            create_web_clock_attribute(app_id, permissions_for_web_clock)
+
+def create_install_clock_attribute(app_id,permissions_for_install_clock):
+    get_cats(app_id)
+    if CLOCK:
+        if isinstance(permissions_for_install_clock, dict):
+            for dictionary in permissions_for_install_clock.values():  # Ensure iterating over values
+                group_id = dictionary.get("id") or dictionary.get("group_id")  # Get group_id safely
+                original_name = dictionary.get("original_name", dictionary["name"])  # Use default if missing
+                if original_name != "Automation":
+                    send_application_group_attribute_request(app_id, group_id, 42, "True")  # Web clock attribute 
+
+        elif isinstance(permissions_for_install_clock, list):
+            if all(isinstance(item, int) for item in permissions_for_install_clock):
+                for group_id in permissions_for_install_clock:
+                    send_application_group_attribute_request(app_id, group_id, 42, "True")  # Reports cost
+            else:
+                print("Error!!")
+                print("Couldn't find permissions for install clock ")
+                print("Features")
+                sys.exit()
+
+    else: 
+        create_clock_feature(app_id)
+        if not hasattr(create_web_clock_attribute, "retry"):
+            create_web_clock_attribute.retry = True  # Prevent infinite recursion
+            create_web_clock_attribute(app_id, permissions_for_install_clock)
 
 def create_automation_user(app_id):
   get_cats(app_id)
+#  get_token()
   global company_id
   company_id= get_company(app_id)
+  company_id=company_id.get('id')
   groups=get_groups(app_id)
   automation_id = None
   for item in groups:
     if item["name"] == "Automation":
         automation_id = item["id"]
         break
-  create_automation_user=env_url+"/api/employee-details/"
+  create_automation_user=env_url+"/api/employees/"
   data = {
-      "application":app_id,
-      "username":"tabit_auto",
-      "password":"tabit"+str(company_id),
+      "application" : app_id,
       "group":automation_id,
-      "first_name" :'טאביט' ,
-      "last_name":'אוטומציה',
-      "phone":'0501111111',
-      "id_number":""
+      "limits":[],
+      "user":
+        {
+        "company":company_id,
+        "username":"tabit_auto",
+        "password":"tabit"+str(company_id),
+        "group":automation_id,
+        "first_name" :'טאביט' ,
+        "last_name":'אוטומציה',
+        "phone":'0501111111',
+        "id_number":""
+        }
      } 
   create_automation_user = requests.post(create_automation_user, json=data, headers=headers)
   if create_automation_user.status_code == 201:
@@ -226,22 +269,29 @@ def create_automation_user(app_id):
             data = json.loads(json_str)
             print(data)
   else:
+            print("Features File")
             print("Error:create_automation_user getting ", create_automation_user.status_code)
             print("Error:create_automation_user getting ", create_automation_user.content)
 
 def create_labor_cost_feature(app_id):
+  get_cats(app_id)
+#  get_token()
   groups= get_groups(app_id)
   organize_groups(groups)
   if automation_group == True:
         create_labor_cost_request = send_application_group_feature_request(app_id,6,39,True)#labor cost 
         if create_labor_cost_request.status_code == 201: 
-            create_automation_user(app_id)
+            print("Labor cost created successfully")
+            #create_automation_user(app_id)
         else:
             print("create_labor_cost_request  didnt work" )
+            #create_automation_user(app_id)
   else:
      print("Error!! There is no automation group")
 
 def create_costs_feature(app_id):
+ get_cats(app_id)
+ #get_token()
  groups= get_groups(app_id)
  organize_groups(groups)
  for i in range((len(high_groups_id))):
@@ -252,6 +302,8 @@ def create_costs_feature(app_id):
  create_report_coulmn(app_id,['2'],'cost_rate',None)
            
 def create_giraffes_feature(app_id):
+    get_cats(app_id)
+#    get_token(app_id)
     groups=get_groups(app_id)
     if CLOCK == False:
         create_clock_feature(app_id)#clock feature
@@ -263,8 +315,11 @@ def create_giraffes_feature(app_id):
             send_application_group_feature_request(app_id,group_id,8,False)#auto populate rota
             if group_id in high_groups_id:
                 send_application_group_attribute_request(app_id,group_id,68,"True")# predefined rota            
-#הגדרת איוש עובדגים מוגדרים מראש 
+
+#הגדרת איוש עובדים מוגדרים מראש 
 def create_predefined_rota_feature(app_id):
+    get_cats(app_id)
+#    get_token()
     groups=get_groups(app_id)
     if CLOCK == False:
         create_clock_feature(app_id)#clock feature
@@ -276,6 +331,8 @@ def create_predefined_rota_feature(app_id):
             send_application_group_feature_request(app_id,group_id,8,False)#auto populate rota
 
 def create_sintot_feature(app_id):
+    get_cats(app_id)
+ #   get_token()
     groups=get_groups(app_id)
     for dictionary in groups:
         group_id=dictionary.get("id")
@@ -286,13 +343,17 @@ def create_sintot_feature(app_id):
             send_application_group_attribute_request(app_id,group_id,147,"3")# clock mode attribute 
 
 def create_vacations_feature(app_id,bool):
+     get_cats(app_id)
+   #  get_token()
      groups=get_groups(app_id)
      organize_groups(groups)
      for dictionary in groups:
         group_id=dictionary.get("id")
         original_name=dictionary.get("original_name")
         if original_name != "Automation":
-            send_application_group_feature_request(app_id,group_id,20,True)# vacation feature     
+            send_application_group_feature_request(app_id,group_id,20,True)# vacation feature 
+            send_application_group_attribute_request(app_id,group_id,194,"True")# vacation_type
+            send_application_group_attribute_request(app_id,group_id,195,"False")# old_interface
      if bool == True:
       for dictionary in groups:
         group_id=dictionary.get("id")
@@ -300,6 +361,8 @@ def create_vacations_feature(app_id,bool):
              send_application_group_attribute_request(app_id,group_id,114,"14")# min request days
 
 def create_replacements_feature(app_id):
+     get_cats(app_id)
+  #   get_token()
      groups=get_groups(app_id)
      for dictionary in groups:
         group_id=dictionary.get("id")
@@ -308,6 +371,8 @@ def create_replacements_feature(app_id):
             send_application_group_feature_request(app_id,group_id,18,True)# replacements feature 
        
 def create_absences_feature(app_id):
+    get_cats(app_id)
+#    get_token()
     groups=get_groups(app_id)
     organize_groups(groups)
     for dictionary in groups:
@@ -319,6 +384,8 @@ def create_absences_feature(app_id):
     create_report_coulmn(app_id,['1'],'absence_0',None)
 
 def create_documents_feature(app_id):
+    get_cats(app_id)
+#    get_token()
     groups=get_groups(app_id)
     organize_groups(groups)
     for dictionary in groups:
@@ -353,6 +420,8 @@ def create_documents_feature(app_id):
          print(create_employee_configuration_request.content )
 
 def create_101_feature(app_id):
+    get_cats(app_id)
+ #   get_token()
     groups=get_groups(app_id)
     for dictionary in groups:
         group_id=dictionary.get("id")
@@ -377,6 +446,8 @@ def create_101_feature(app_id):
          print(create_employee_configuration_request.status_code )
 
 def create_tasks_feature(app_id):
+    get_cats(app_id)
+  #  get_token()
     groups=get_groups(app_id)
     for dictionary in groups:
         group_id=dictionary.get("id")
@@ -388,9 +459,10 @@ def create_tasks_feature(app_id):
 
     #Moti said that he will make al the messages_configurations as ture
 
-
 # נונו מימי NONO MIMI
 def create_multi_rota_feature(app_id,locations):
+    get_cats(app_id)
+   # get_token()
     groups=get_groups(app_id)
     for dictionary in groups:
         group_id=dictionary.get("id")
@@ -420,6 +492,7 @@ def create_multi_rota_feature(app_id,locations):
 
 def create_report_coulmn(app_id,reports,coulmn_name,name):
     get_cats(app_id)
+#    get_token()
     create_report_coulmn_url=env_url+"api/report-column/"
     if name == None:
      data= {
@@ -445,6 +518,8 @@ def create_report_coulmn(app_id,reports,coulmn_name,name):
             print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.content)
 
 def create_cutting_hours_feature(app_id,cutting_hours):
+    get_cats(app_id)
+   # get_token()
     for item in cutting_hours :
         group_id=item.get("group_id")
         attribute=item.get("attribute")
@@ -454,6 +529,14 @@ def create_cutting_hours_feature(app_id,cutting_hours):
 
 ############ Delete ############
 ###############################
+
+
+def delete_auto_populate_rota(app_id):
+    groups=get_groups(app_id)
+    organize_groups(groups)
+    for dictionary in groups:
+         group_id=dictionary.get("id")
+         send_application_group_feature_request (app_id,group_id,8,False)
 
 def delete_replacements_feature(app_id):
      groups=get_groups(app_id)
