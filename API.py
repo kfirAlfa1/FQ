@@ -1,9 +1,9 @@
-
 import requests
 import ReadData
 import json
 import Features
 import WorldTimeZones
+import sys
 from deep_translator import GoogleTranslator
 from openpyxl import load_workbook
 from openpyxl import Workbook
@@ -11,9 +11,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 
-
 env_url= "https://k8-shift.tabit-dev.com"
-
 
 # https://k8-shift.tabit-dev.com
 # https://k8-shift.tabit-dev.com/admin
@@ -31,8 +29,9 @@ env_url= "https://k8-shift.tabit-dev.com"
 
 
 days_of_the_week = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+general_high_groups_permissions=["Headquarters","Owners","Managers"]
+high_groups_permissions=[]
 LIST_OF_ROLES=[]
-
 auto_user_created=False
 
 ########################################################################
@@ -83,18 +82,15 @@ def choose_language():
            ReadData.language='en-tabit'
  return ReadData.language
       
-def return_perrmisions_default (group):
-     if ReadData.default_perrmision == group:
-          return True
-     else:
-        return False
-
 def return_perrmisions_id (group):
       if group=='Headquarters':
+            high_groups_permissions.append(10)
             return 10
       elif group=='Owners':
+            high_groups_permissions.append(7)
             return 7
       elif group=='Managers':
+            high_groups_permissions.append(2)
             return 2
       elif group=='Junior-Managers':
             return 9
@@ -102,53 +98,63 @@ def return_perrmisions_id (group):
             return 8
       elif group=='Sub-Managers':
             return 3
-      elif group=='Senior Employees':
+      elif group=='Senior Employees' or group=='Senior-employess':
             return 11  
       elif group=='Employees':
             return 4
-      elif group=='Junior Employees':
+      elif group=='Junior Employees' or group=='Junior-employees':
             return 5
       elif group=='Automation':
             return 6
+      else:
+           print("Error!!")
+           print("Couldent find the id of the group")
+           sys.exit()
 
 def change_perrmision_to_english(index):
-  if ReadData.perrmisions_list_names[index] == 'מטה':
-      ReadData.perrmisions_list_names[index] = 'Headquarters'
-  elif ReadData.perrmisions_list_names[index] == 'בעלים':
-                  ReadData.perrmisions_list_names[index] = 'Owners'
-  elif ReadData.perrmisions_list_names[index] == 'מנהלים':
-        ReadData.perrmisions_list_names[index] = 'Managers' 
-  elif ReadData.perrmisions_list_names[index] == 'מנהל מתלמד':
-                  ReadData.perrmisions_list_names[index] = 'Junior-Managers'
-  elif ReadData.perrmisions_list_names[index] == 'מנהלי משמרת':
-        ReadData.perrmisions_list_names[index] = 'Senior Sub-Managers'  
-  elif ReadData.perrmisions_list_names[index] == 'סגן מנהל משמרת':
-                  ReadData.perrmisions_list_names[index] = 'Sub-Managers'
-  elif ReadData.perrmisions_list_names[index] == ' עובדים' or ReadData.perrmisions_list_names[index] == 'עובדים'  or ReadData.perrmisions_list_names[index] == 'עובדים '  :
-        ReadData.perrmisions_list_names[index] = 'Employees' 
-  elif ReadData.perrmisions_list_names[index] == 'עובדים עם חיתוך שעון':
-                  ReadData.perrmisions_list_names[index] = 'Junior Employees' 
-     
+  temp =ReadData.perrmisions_list[index]
+  if temp['name_of_group'] == 'מטה':
+      temp['name_of_group'] = 'Headquarters'
+  elif temp['name_of_group'] == 'בעלים':
+          temp['name_of_group'] = 'Owners'
+  elif temp['name_of_group'] == 'מנהלים':
+        temp['name_of_group']= 'Managers' 
+  elif temp['name_of_group'] == 'מנהל מתלמד':
+          temp['name_of_group'] = 'Junior-Managers'
+  elif temp['name_of_group'] == 'מנהלי משמרת':
+        temp['name_of_group'] = 'Senior Sub-Managers'  
+  elif temp['name_of_group'] == 'סגן מנהל משמרת':
+          temp['name_of_group'] = 'Sub-Managers'
+  elif temp['name_of_group'] == ' עובדים' or  temp['name_of_group'] == 'עובדים'  or temp['name_of_group'] == 'עובדים '  :
+        temp['name_of_group'] = 'Employees' 
+  elif temp['name_of_group'] == 'עובדים עם חיתוך שעון':
+          temp['name_of_group'] = 'Junior Employees'
+  else:
+    return 
+
+#Organize the perrmisions in order to fit to the API of creating app
 def organize_groups():
     global groups
     groups=[]
     for i in range(len(ReadData.perrmisions_list)):
-        perrmisions_id=return_perrmisions_id(ReadData.perrmisions_list[i])
-        is_default=return_perrmisions_default(ReadData.perrmisions_list[i])
+        temp= ReadData.perrmisions_list[i]
+        perrmisions_id=return_perrmisions_id(temp['group'])
+        is_default=temp['default_gruop']
         if  ReadData.language != 'he':
              change_perrmision_to_english(i)
 
         groups.append({
-             "name": ReadData.perrmisions_list_names[i],
+             "name": temp['name_of_group'],
              "group_id": perrmisions_id,
              "is_default": is_default
               })
-
-def return_religions_default (religion):
-     if ReadData.default_religion == religion:
-          return True
-     else:
-        return False
+        
+#     groups.append({
+#              "name": "Support",
+#              "group_id": 14,#Support
+#              "is_default": False
+#               })
+     
 
 def return_religions_id (religion):
       if religion=='Jewish':
@@ -161,27 +167,32 @@ def return_religions_id (religion):
             return 4
       elif religion =='Foreign 2':
             return 5
+      else:
+          print("Error!!")
+          print("Couldent find the id of the religion")
+          sys.exit()  
 
+#Organize the religions in order to fit to the API of creating app
 def organize_religions():
     global religions
     religions=[]
     for i in range(len(ReadData.religions_list)):
-        religion_id=return_religions_id(ReadData.religions_list[i])
-        is_default=return_religions_default(ReadData.religions_list[i])
+        temp=ReadData.religions_list[i]
+        religion_id=return_religions_id(temp['religion'])
         if  ReadData.language != 'he':
-             if ReadData.religions_list_names[i] == 'יהודי':
-                  ReadData.religions_list_names[i] = 'Jewish'
-             elif ReadData.religions_list_names[i] == 'נוצרי':
-                  ReadData.religions_list_names[i] = 'Christian'
-             elif ReadData.religions_list_names[i] == 'מוסלמי':
-                  ReadData.religions_list_names[i] = 'Muslim'  
+             if temp['name_of_religion'] == 'יהודי':
+                 temp['name_of_religion'] = 'Jewish'
+             elif temp['name_of_religion'] == 'נוצרי':
+                  temp['name_of_religion'] = 'Christian'
+             elif temp['name_of_religion'] == 'מוסלמי':
+                  temp['name_of_religion'] = 'Muslim'  
              else:
-                   ReadData.religions_list_names[i] = 'Foreign'      
+                  temp['name_of_religion'] = 'Foreign'      
              
         religions.append({
-             "name": ReadData.religions_list_names[i],
+             "name": temp['name_of_religion'],
              "religion_id": religion_id,
-             "is_default": is_default
+             "is_default": temp['default_religion']
             })
 
 def choose_employee_configuration_field(name_of_attribute):
@@ -207,7 +218,7 @@ def choose_employee_configuration_field(name_of_attribute):
          return 'primary_role'
 
 def choose_password_security_level():
-      if   "גבוהה (שליחת פרטי התחברות)" == ReadData.password_security_level or "גבוהה" in  ReadData.password_security_level:
+      if  "גבוהה (שליחת פרטי התחברות)" == ReadData.password_security_level or "גבוהה" in  ReadData.password_security_level:
             ReadData.password_security_level=3 
       elif ReadData.password_security_level == "נמוכה":
             ReadData.password_security_level=1
@@ -250,7 +261,13 @@ def choose_time_zone():
       timezones = WorldTimeZones.TIME_ZONES
       hebrew_text = ReadData.time_zone
       translated = GoogleTranslator(source='auto', target='en').translate(hebrew_text)
-      timezone = find_timezone(translated, timezones)
+      if '5' in translated or '4' in translated :
+           timezone='Asia/Jerusalem'
+      else:
+       timezone = find_timezone(translated, timezones)
+      if timezone == None:
+            timezone='Asia/Jerusalem'
+           
       ReadData.time_zone=timezone
     
 def create_app():
@@ -264,7 +281,8 @@ def create_app():
  last_day_for_subbmit_shifts=days_of_the_week.index(ReadData.last_day_for_subbmit_shifts)
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
  organize_religions()
- organize_groups() 
+ organize_groups()
+ 
  create_app_url=env_url+"/api/applications/"
  
  data={
@@ -301,10 +319,11 @@ def create_app():
     print("This is app id")
     print(app_id)
  else:
-     print("Error:create_compeny_request getting ", create_app_request.status_code)
-     print("Error:create_compeny_request getting ", create_app_request.content)
+     print("Error:create_app_request getting ", create_app_request.status_code)
+     print("Error:create_app_request getting ", create_app_request.content)
 
 def create_attendance_app():
+ global app_id
  choose_language()
  choose_password_security_level()
  account_number()
@@ -346,7 +365,6 @@ def create_attendance_app():
 
  create_app_request = requests.post(create_app_url, json=data, headers=headers)
  if create_app_request.status_code == 201:
-    global app_id
     json_str = create_app_request.content.decode('utf-8')
     data = json.loads(json_str)
     app_id = data.get('id')
@@ -362,14 +380,11 @@ def get_app(app_id):
  get_appliaction_request = requests.get(get_appliaction_url,json=None,headers=headers)
  if get_appliaction_request.status_code == 200:
       response_data = get_appliaction_request.json()
-#     local_account_number=response_data.get("account_number")
-#     print("This is account number: ")
-#     print(local_account_number)
-#     print(json.dumps(response_data, indent=4, ensure_ascii=False))
       return response_data
 
  else:
      print("Error:get_appliaction_request ", get_appliaction_request.status_code)
+     print("API file")
 
 def get_groups(app_id):
  get_appliaction_url=env_url+"/api/applications/"+str(app_id)
@@ -391,25 +406,54 @@ def convert_role_name_to_id(role_name,role_id,list):
                  roles[j]=role_id
                  break  
 
-def convert_group_name_to_id(list_target,list_sorce):
- if isinstance(list_target, list):
-     for i in range(len(list_sorce)):
-       temp_sorce=list_sorce[i]
-       group_id=temp_sorce["id"]
-       group_name=temp_sorce["name"]
-       for j in range(len(list_target)):
-            if list_target[j]==group_name:
-                 list_target[j]=group_id
-                 break  
- else:
-   for i in range(len(list_sorce)):
-       temp_sorce=list_sorce[i]
-       group_id=temp_sorce["id"]
-       group_name=temp_sorce["name"]
-       for j in range(len(list_sorce)):
-            if list_target == group_name:
-                 return group_id
-             
+def convert_name_of_group_from_hebrew_to_english(name_of_group):
+  if name_of_group == 'מטה':
+      name_of_group = 'Headquarters'
+      return name_of_group
+  elif name_of_group == 'בעלים':
+      name_of_group = 'Owners'
+      return name_of_group
+  elif name_of_group == 'מנהלים':
+        name_of_group= 'Managers' 
+        return name_of_group
+  else:
+    return
+
+def convert_group_name_to_id(list_target, list_source):
+    # If the input is a single element (string, int, or dict), convert it to a list for uniform processing
+    if isinstance(list_target, (str, int, dict)):
+        list_target = [list_target]
+
+    group_ids = []
+
+    for item in list_target:
+        found = False  # Flag to check if we found a match
+
+        for temp_source in list_source:
+            group_id = temp_source.get("id") or temp_source.get("group_id")
+            group_name = temp_source["name"]
+            group_original_name = temp_source.get("original_name", group_name)
+
+            # Handle dictionaries (extract name_of_group)
+            if isinstance(item, dict):
+                item_name = item.get("name_of_group")
+            else:
+                item_name = item  # Direct string or number
+
+            # Match names and append group_id
+            if item_name in (group_name, group_original_name):
+                group_ids.append(group_id)
+                found = True
+                break
+
+        # If no match is found, raise an error
+        if not found:
+            print(f"Error! Could not find group name or ID for: {item}")
+            sys.exit()
+
+    # If there's only one ID, return it as an integer, otherwise return the list of IDs
+    return group_ids[0] if len(group_ids) == 1 else group_ids
+
 def convert_shift_name_to_id(shift_name,shift_id):
      for i in range(len(ReadData.receives_limits)):
        temp_limit=ReadData.receives_limits[i]
@@ -430,12 +474,13 @@ def create_role(index,roles,app_id):
  if create_role_request.status_code == 201:
     json_str = create_role_request.content.decode('utf-8')
     data = json.loads(json_str)
-    convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.shifts)
+    convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.shifts) # For shifts 
 
     if len(ReadData.locations) !=0 :
-      convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.locations)
+      convert_role_name_to_id(data.get("name"),data.get("id"),ReadData.locations)# For locations 
     print(data)
-    LIST_OF_ROLES.append(data.get("id"))
+
+    LIST_OF_ROLES.append(data.get("id")) # For create_hourly_cost 
     
  else:
      print("Error:create_role_request getting ", create_role_request.status_code)
@@ -446,7 +491,7 @@ def create_shifts(index,shifts,app_id):
  temp_shifts=shifts[index]
  name= temp_shifts["name"]
  roles=temp_shifts["roles"]
- continuously=temp_shifts["continuously"]    #str(temp_shifts["continuously"])
+ continuously=temp_shifts["continuously"]  
  data= {
    "name":name,
     "application": app_id,
@@ -560,6 +605,9 @@ def create_employee_configuration(index,app_id,attribute,headers):
 
       else:
            mandatory=False
+ 
+      if (len(ReadData.employee_configurations) == 0):
+           return 
       temp=ReadData.employee_configurations[index]
       name_of_attribute=choose_employee_configuration_field(temp["name"])
       if name_of_attribute == 'number':
@@ -610,24 +658,36 @@ def create_automation_user(app_id):
     if item["name"] == "Automation":
         automation_id = item["id"]
         break
-  create_automation_user=env_url+"/api/employee-details/"
+  create_automation_user=env_url+"/api/employees/"
   data = {
-      "application":app_id,
-      "username":"tabit_auto",
-      "password":"tabit"+str(company_id),
+      "application" :app_id,
       "group":automation_id,
-      "first_name" :'טאביט' ,
-      "last_name":'אוטומציה',
-      "phone":'0501111111',
-      "id_number":""
-     } 
+      "limits":[],
+      "user":
+      {
+        "company":company_id,
+        "username":"tabit_auto",
+        "password":"tabit"+str(company_id),
+        "first_name" :'טאביט' ,
+        "last_name":'אוטומציה',
+        "email":"",
+        "phone_number":"0511111111",
+        }
+      }
   create_automation_user = requests.post(create_automation_user, json=data, headers=headers)
   if create_automation_user.status_code == 201:
             global auto_user_created
             json_str = create_automation_user.content.decode('utf-8')
             data = json.loads(json_str)
-            print(data)
+            
+            print("\n Automation user created \n\n")
+            print("username : tabit_auto")
+            print("password : tabit"+ str(company_id))
+            print("company :"+ str(company_id))
+            print("app id  :"+ str(app_id))
+            print()
             auto_user_created=True
+
   else:
             print("Error:create_automation_user getting ", create_automation_user.status_code)
             print("Error:create_automation_user getting ", create_automation_user.content)
@@ -640,7 +700,9 @@ def create_features(index,app_id,unplanned_shift_flag):
         create_unplanned_shift(app_id,False)
         unplanned_shift_flag= True
       create_hourly_cost(app_id)
-      auto_user_created=True
+      if auto_user_created == False:
+           create_automation_user(app_id)
+           auto_user_created=True
  elif ReadData.features[index] == 'עלויות':
       Features.create_costs_feature(app_id)
  elif   "פיצ'ר ג'ירפות" in ReadData.features[index] :
@@ -676,14 +738,17 @@ def create_features(index,app_id,unplanned_shift_flag):
  elif   ReadData.features[index] == 'משימות' :
          Features.create_tasks_feature(app_id)
  elif   ReadData.features[index] == 'נסיעות' :
-         create_travel_cost(app_id,"עלות נסיעות יומית",'D',1)
-         create_travel_cost(app_id,"עלות חופשי חודשי",'M',2) 
+         create_travel_cost(app_id,"עלות נסיעות שעתית ",'H',1)
+         create_travel_cost(app_id,"עלות נסיעות יומית",'D',2)
+         create_travel_cost(app_id,"עלות חופשי חודשי",'M',3) 
          create_report_coulmn(app_id,["1","2"],'auto_travel_cost',None)  
 
 def create_unplanned_shift(app_id,attendnce):
       global unplanned_shift_id
       if attendnce == True:
            name= "נוכחות"
+           if ReadData.language != 'he':
+              name= "Attendnce" 
       else:
           name= "בלת''מ" 
       create_unplannedshift_url=env_url+"/api/unplanned-shifts/"
@@ -732,78 +797,59 @@ def create_clock(app_id):
  unplanned_shift_flag=False
  if ReadData.clock == 'ללא שעון':
       return
- if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):
+ if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):#Check if clock id inside employee configuration
         print() #No 
  else:
-      create_employee_configuration(0,app_id,'מזהה שעון')
+      create_employee_configuration(0,app_id,'מזהה שעון',headers)
  if unplanned_shift_flag==False:
        create_unplanned_shift(app_id,False)  
        unplanned_shift_flag=True
  Features.create_clock_feature(app_id)
  if ReadData.clock == 'ביומטרי':
     Features.create_clock_feature(app_id)
-#     if ReadData.clock_number != None:
-#        create_biometric_clock=env_url+"/api/clock/"
-#        data= {
-#           "company": company_id,
-#           "serial":ReadData.clock_number,
-#           "is_active":True,
-#           }
-#        create_biometric_clock = requests.post(create_biometric_clock, json=data, headers=headers)
-#        if create_biometric_clock.status_code == 201:
-#                json_str = create_biometric_clock.content.decode('utf-8')
-#                data = json.loads(json_str)
-#                print(data)
-#        else:
-#                print("Error:create_biometric_clock getting ", create_biometric_clock.status_code)
-#                print("Error:create_biometric_clock getting ", create_biometric_clock.content)
+    return 
+ if ReadData.clock == 'טאביט':
+      if auto_user_created == False:
+         create_automation_user(app_id)
+         return
+ elif  'אפליקציה' in ReadData.clock:
+      if ReadData.permissions_for_web_clock != None: #For part of the groups
+         permissions_after_convert= convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
+         Features.create_web_clock_attribute(app_id,permissions_after_convert)
+         return
+ elif  'תוכנתי' in ReadData.clock:
+        Features.create_install_clock_attribute(app_id,high_groups_permissions)
+        return 
 
-         
+def create_attendance_clock(app_id):
+ global unplanned_shift_flag
+ unplanned_shift_flag=False
+ if ReadData.clock == 'ללא שעון':
+     return
+ if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):
+        print() #No 
+ else:
+      create_employee_configuration(0,app_id,'מזהה שעון',headers)
+ if unplanned_shift_flag==False:
+       create_unplanned_shift(app_id,True)  
+       unplanned_shift_flag=True
+ Features.create_clock_feature(app_id)
+ if ReadData.clock == 'ביומטרי':
+    Features.create_clock_feature(app_id)      
  if ReadData.clock == 'טאביט':
       if auto_user_created == False:
          create_automation_user(app_id)
  elif  'אפליקציה' in ReadData.clock:
       if ReadData.permissions_for_web_clock != None: #For part of the groups
-         convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
-         Features.create_web_clock_attribute(app_id,ReadData.permissions_for_web_clock)
-      else:
-         Features.create_web_clock_attribute(app_id,ReadData.permissions_for_web_clock) #For all  groups   
+         permissions_after_convert=convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
+         Features.create_web_clock_attribute(app_id,permissions_after_convert) 
  elif  'תוכנתי' in ReadData.clock:  
-      if ReadData.permissions_for_web_clock != None:
-        convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)   
-        Features.create_install_clock_attribute(app_id,ReadData.permissions_for_web_clock)#For part of the groups
-      else:
-            Features.create_install_clock_attribute(app_id,ReadData.permissions_for_web_clock) #For all  groups  
-
-def create_attendance_clock(app_id):
- if ReadData.clock == 'ללא שעון':
-      Features.create_clock_feature(app_id)
-      return "Erorr!!, attendance system with no clock!!"    
- if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):
-        print() #No 
- else:
-      create_employee_configuration(0,app_id,'מזהה שעון')
- Features.create_clock_feature(app_id)
- create_attendance_unplanned_shift(app_id)
- if ReadData.clock == 'טאביט':
-        Features.create_automation_user(app_id) 
-        create_unplanned_shift(app_id,True)
- elif  'אפליקציה' in ReadData.clock:
-      if ReadData.permissions_for_web_clock != None: #For part of the groups
-         convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
-         Features.create_web_clock_attribute(app_id,ReadData.permissions_for_web_clock)
-      else:
-         Features.create_web_clock_attribute(app_id,ReadData.permissions_for_web_clock) #For all  groups   
- elif  'תוכנתי' in ReadData.clock:  
-      if ReadData.permissions_for_web_clock != None:
-        convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)   
-        Features.create_install_clock_attribute(app_id,ReadData.permissions_for_web_clock)#For part of the groups
-      else:
-            Features.create_install_clock_attribute(app_id,ReadData.permissions_for_web_clock) #For all  group
+        Features.create_install_clock_attribute(app_id,high_groups_permissions)
+        return 
 
 def create_employee(index,headers,employee_details,app_id):
   groups=get_groups(app_id)
-  create_employee_url=env_url+"/api/employee-details/"
+  create_employee_url=env_url+"/api/employees/"
   headers=headers
   temp=employee_details[index]
   user_name=temp["user_name"]
@@ -812,20 +858,39 @@ def create_employee(index,headers,employee_details,app_id):
   last_name=temp["last_name"]
   if last_name == None:
        last_name=""
-  email=  temp["email"] 
-  phone_number=   temp["phone_number"]
+  email=  temp["email"]
+  if  email == None:
+       email=""
+  phone_number=  temp["phone_number"]
+  if  phone_number == None:
+       return 
+  phone_number=str(phone_number)
+  if phone_number.startswith('5'):
+       phone_number='0'+phone_number
+  elif phone_number.startswith('972'):
+        phone_number='0'+ phone_number[3:]
   group =temp["group"]
+  group= convert_name_of_group_from_hebrew_to_english(group)
   group=convert_group_name_to_id(group,groups) 
+  if group == None:
+       print("Couldent find group id of owners")
+       print("The owner has not been established in the system")
+       return
+
   data = {
-      "application":app_id,
-      "username":user_name,
-      "password":password,
+      "application" : app_id,
       "group":group,
-      "first_name" :first_name,
-      "last_name":last_name,
-      "email":email,
-      "phone":phone_number,
-      "id_number":"" 
+      "limits":[],
+      "user":
+      {
+        "company":company_id,
+        "username":user_name,
+        "password":password,
+        "first_name" :first_name,
+        "last_name":last_name,
+        "email":email,
+        "phone_number":phone_number,
+        }
       }
   create_employee_url = requests.post(create_employee_url, json=data, headers=headers)
   if create_employee_url.status_code == 201:
@@ -1045,49 +1110,43 @@ def create_report_coulmn(app_id,reports,coulmn_name,name):
                print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.status_code)
                print("Error:create_report_coulmn_url getting ", create_report_coulmn_url.content)
 
-
 ###Excel 
-######################################################
-def load_excel_file():
-    global sheet 
+
+def load_and_convert_excel_to_values_only():
+    global sheet1 
     global sheet2
-    global root
+
     file_path = filedialog.askopenfilename(
     title="Select an Excel file",
     filetypes=[("Excel files", "*.xlsx;*.xls")]
     )
-    if file_path:
-        wb = load_workbook(file_path, data_only=True)
-        new_wb = Workbook()
 
-        for idx, sheet_name in enumerate(wb.sheetnames):
+    if file_path:
+        wb = load_workbook(file_path, data_only=True) #Open the excel and copies the values (not formulas)
+        new_wb = Workbook() # Create new Workbook 
+
+    for idx, sheet_name in enumerate(wb.sheetnames):
             original_ws = wb[sheet_name]
-            # Create a new sheet for each sheet, except the first one
             if idx == 0:
-                new_ws = new_wb.active  # Use the default active sheet
+                new_ws = new_wb.active
             else:
                 new_ws = new_wb.create_sheet(title=sheet_name)
             
             new_ws.title = sheet_name
 
-            for row in original_ws.iter_rows(values_only=True):
+            for row in original_ws.iter_rows(values_only=True): # Add as values only
                 new_ws.append(row)
 
-        new_file = 'values_only_file.xlsx'
-        new_wb.save(new_file)
+    sheet1 = new_wb.worksheets[0]
+    sheet2 = new_wb.worksheets[1]
+    root.destroy()
 
-        # Access the first and second sheets
-        sheet = new_wb.worksheets[0]
-        sheet2 = new_wb.worksheets[1]
-        root.destroy()
-
-#####################################################
 
 def create_system(two_systems_boolean):
  get_token()
  global headers
  headers = {"Authorization": f"Token {token}"}
- if two_systems_boolean == False:
+ if two_systems_boolean == False: 
      create_company()
  create_app()
  Cats = Features.get_cats(app_id)
@@ -1109,76 +1168,123 @@ def create_system(two_systems_boolean):
 
  for i in range(len(ReadData.features)):
   create_features(i,app_id,unplanned_shift_flag)
- if len(ReadData.cutting_hours) != 0:
+ if len(ReadData.cutting_hours) != 0: #Specific for cutting hours
    Features.create_cutting_hours_feature(app_id,ReadData.cutting_hours) 
+   create_report_coulmn(app_id,["3"],'exit_cut',None)
+   create_report_coulmn(app_id,["3"],'entry_cut',None)
+
+ 
+ if len(ReadData.shabat) !=0:
+      create_shabat(app_id)
 
  if ReadData.holidays == "כן":
       choose_holiday_area_code()
       create_automatic_holiday(app_id)
-      create_shabat(app_id)
 
  if ReadData.automatic_holidays_special_cost == "כן":
       create_report_attribute(app_id)
       Features.create_special_holiday(app_id)
-      create_report_coulmn(app_id,["1","2"],'special_holiday_100',None)
+      if ReadData.language != "he":
+          create_report_coulmn(app_id,["1","2"],'special_holiday_100',"Speciel 200%")
+      else:          
+          create_report_coulmn(app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
 
  for i in range(len(ReadData.employee_configurations)):
      create_employee_configuration(i,app_id,ReadData.employee_configurations[i],headers)
 
-#  for i in range(len(ReadData.owner_details)):
-#       create_employee(i,headers,ReadData.owner_details,app_id)
-    
+ for i in range(len(ReadData.owner_details)):
+      create_employee(i,headers,ReadData.owner_details,app_id)
 
-root = tk.Tk()
-root.title("FQ system")
-root.geometry("400x250")
-load_button = tk.Button(root, text="Load Excel File", command=load_excel_file)
-load_button.pack(pady=50)
-root.mainloop()
 
+ print("\n\n System created successfully\n\n")
 
 ##### ATTENDANCE SYSTEM ###
 
 def create_attendance_system():
+ ReadData.read_all_data(sheet1)
  get_token()
  global headers
  headers = {"Authorization": f"Token {token}"}
  create_company()
+ create_attendance_app()
  Cats = Features.get_cats(app_id)
  headers = {"Authorization": f"Token {token}", "Cats": Cats}
- create_attendance_app()
- create_role()
+
+ create_role(0,ReadData.roles,app_id)
+
+ create_attendance_clock(app_id)
+
+ 
+ if len(ReadData.shabat) !=0:
+      create_shabat(app_id)
+
  if ReadData.automatic_holidays_special_cost == "כן":
-      create_report_attribute(app_id)
+      create_report_attribute(app_id)#Spacial holiday regular hours rate
       Features.create_special_holiday(app_id)
-      print("Report columns")
+      if ReadData.language != "he":
+          create_report_coulmn(app_id,["1","2"],'special_holiday_100',"Speciel 200%")
+      else:          
+          create_report_coulmn(app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
+
+
  if ReadData.holidays == "כן":
       choose_holiday_area_code()
       create_automatic_holiday(app_id)
-      create_shabat(app_id)
+
+
  for i in range(len(ReadData.features)):
-  create_features(i,app_id)
+  create_features(i,app_id,unplanned_shift_flag)
  if len(ReadData.cutting_hours) != 0:
-   Features.create_cutting_hours_feature(278,ReadData.cutting_hours) 
- create_attendance_clock(app_id)
- 
+   Features.create_cutting_hours_feature(278,ReadData.cutting_hours)
+ Features.delete_auto_populate_rota(app_id)
+
+
+ for i in range(len(ReadData.employee_configurations)):
+     create_employee_configuration(i,app_id,ReadData.employee_configurations[i],headers)
+
+ for i in range(len(ReadData.owner_details)):
+      create_employee(i,headers,ReadData.owner_details,app_id)
+
+ print("\n\n System created successfully\n\n")
+
 ##### Regular SYSTEM ###
-def create_regular_system():
- ReadData.read_data_for_regular_system(sheet)
+def one_system():
+ ReadData.read_all_data(sheet1)
  create_system(False)
 
 ##### 2 applications with one company SYSTEM ###
-
-def create_two_systems_with_one_company():
-  ReadData.read_data_for_regular_system(sheet)
+def two_systems_with_one_company():
+  ReadData.read_all_data(sheet1)
   create_system(False) 
-  ReadData.read_data_for_regular_system(sheet2)
+  ReadData.read_all_data(sheet2)
   if len (ReadData.shifts) != 0:   
    create_system(True) 
 
 
-create_two_systems_with_one_company()
+
+
+########################################
+########################################
+########################################
+
+root = tk.Tk()
+root.title("FQ system")
+root.geometry("400x250")
+load_button = tk.Button(root, text="Load Excel File", command=load_and_convert_excel_to_values_only)
+load_button.pack(pady=50)
+root.mainloop()
+
+
+ 
+two_systems_with_one_company()
+
+
+#create_attendance_system()
 
 
 
-# create_biometric_clock
+
+
+
+#For Motti
+# Support gruop in  organize_groups() function
