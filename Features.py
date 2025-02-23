@@ -23,7 +23,7 @@ low_groups_id=[]
 def get_token():
       global  token
       tok_url = env_url+"api/auth/token/"
-      tok_data = {"username": "kfira", "password": "159753ASDF", "company": 1}
+      tok_data = {"username": "", "password": "", "company": }
       response = requests.post(tok_url, json=tok_data)
       if response.status_code == 200:  
         token = response.json().get('token')
