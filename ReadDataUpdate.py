@@ -1,5 +1,6 @@
 from datetime import time
 import TestData
+import utils
 
 general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers','Senior Sub-Managers','Sub-Managers','Senior-employess','Senior Employees','Employees','Junior Employees','Automation']
 general_religions_list =['Jewish','Christian','Muslim','Foreign']
@@ -20,39 +21,34 @@ ERRORS_MESSAGES=[]
 
 def get_groups():
     global default_perrmision
-    i=5
-    while sheet.cell(row=i, column=1).value != 'דתות' and i<50 and sheet.cell(row=i, column=1).value != 'קבוצות - הרשאות ניהול' :
-        i+=1
-    if sheet.cell(row=i, column=1).value == 'קבוצות - הרשאות ניהול' :
-        i+=2
-        while sheet.cell(row=i, column=1).value != 'דתות' and i<50:
-            temp=sheet.cell(row=i, column=3).value
-            if temp == 1:
-                j=i
-                group=sheet.cell(row=j, column=1).value
-                TestData.test_in_list(group,general_perrmisions_list,"group",ERRORS_MESSAGES)#Cheack if permission exist
-                name_of_group=sheet.cell(row=j, column=2).value
-                name_of_group=TestData.test_not_none_and_strip(name_of_group,"name_of_group",ERRORS_MESSAGES)
-                
-                if sheet.cell(row=j, column=4).value == 'כן':#Check if default
-                    default_perrmision=True
-                else:
-                    default_perrmision=False
-            
-                perrmisions_list.append( {
-                "group":group,
-                "name_of_group":name_of_group,
-                "default_gruop":default_perrmision,
-                })
-                
-                i+=1
-            else:
-                i+=1   
+    i = 5
+    while i < 50:
+        val = sheet.cell(row=i, column=1).value
+        if val in ['דתות', 'קבוצות - הרשאות ניהול']:
+            break
+        i += 1
 
-        if sheet.cell(row=i, column=1).value == 'דתות':
-                return 
-    else:
-        TestData.error_exit("Cant find gruops!",ERRORS_MESSAGES)
+    if sheet.cell(row=i, column=1).value != 'קבוצות - הרשאות ניהול':
+        TestData.error_exit("Cant find gruops!", ERRORS_MESSAGES)
+
+    i += 2
+    while i < 50 and sheet.cell(row=i, column=1).value != 'דתות':
+        if sheet.cell(row=i, column=3).value == 1:
+            group = sheet.cell(row=i, column=1).value
+            TestData.test_in_list(group, general_perrmisions_list, "group", ERRORS_MESSAGES)
+            name_of_group = TestData.test_not_none_and_strip(
+                sheet.cell(row=i, column=2).value, "name_of_group", ERRORS_MESSAGES
+            )
+            default_perrmision = (sheet.cell(row=i, column=4).value == 'כן')
+            perrmisions_list.append({
+                "group": group,
+                "name_of_group": name_of_group,
+                "default_gruop": default_perrmision,
+            })
+        i += 1
+
+    if sheet.cell(row=i, column=1).value == 'דתות':
+        return
 
 def get_religions():
     global default_religion
@@ -127,53 +123,46 @@ def get_application_and_company():
     TestData.test_religions(religions_list,ERRORS_MESSAGES)
      
 def get_owners():
- i=3
- while sheet.cell(row=i, column=1).value != 'שם חברה' and sheet.cell(row=i, column=1).value !='שם משתמש' and i<30:
-        i+=1
- if sheet.cell(row=i, column=1).value =='שם חברה' or i== 30:
-     return "Couldnt find owner details " #Not necessarily an error- sheet2
- if sheet.cell(row=i, column=1).value =='שם משתמש': 
-    j=2 
-    for x in range(2):
-     if sheet.cell(row=i, column=j+x).value != None and sheet.cell(row=i, column=j+x).value != ' ' : #Check if user name exist
-
-        password=sheet.cell(row=i+1, column=j+x).value
-        password=TestData.test_not_none_and_strip(password,"password",ERRORS_MESSAGES)
-        if len(password)<8:
-                TestData.error_exit("Password to short",ERRORS_MESSAGES)
-
-        full_name =sheet.cell(row=i+3, column=j+x).value
-        full_name=TestData.test_not_none_and_strip(full_name,"full_name",ERRORS_MESSAGES)
-        if full_name != None:
-           full_name =full_name.split(' ')
-           first_name=full_name[0]
-        if len (full_name) == 1:
-            last_name=None
-        elif len (full_name) == 2:
-            last_name=full_name[1]
-        elif len (full_name) > 2:
-            last_name=full_name[1] + ' ' + full_name[2]
-    
-        phone_number=sheet.cell(row=i+5, column=2+x).value
-        phone_number=TestData.test_not_none_and_strip(phone_number,"phone_number",ERRORS_MESSAGES)
-        if phone_number!= None:
-            phone_number = str(phone_number)
-        if phone_number.startswith("5"): 
-            phone_number = "0" + phone_number
-        elif phone_number.startswith("972"): 
-             phone_number = "0" + phone_number[3:]
-       
-        owner_details.append(
-        {
-            "user_name":sheet.cell(row=i, column=j+x).value,
-            "password":password,
-            "group":sheet.cell(row=i+2, column=j+x).value,
-            "first_name":first_name,
-            "last_name":last_name,
-            "email":sheet.cell(row=i+4, column=2+x).value,
-            "phone_number":phone_number
-        })
-  
+    i = 3
+    while i < 30 and sheet.cell(row=i, column=1).value not in ['שם חברה', 'שם משתמש']:
+        i += 1
+    if sheet.cell(row=i, column=1).value == 'שם חברה' or i == 30:
+        return "Couldnt find owner details "
+    if sheet.cell(row=i, column=1).value == 'שם משתמש':
+        j = 2
+        for x in range(2):
+            user = sheet.cell(row=i, column=j+x).value
+            if user and user.strip():
+                password = TestData.test_not_none_and_strip(
+                    sheet.cell(row=i+1, column=j+x).value, "password", ERRORS_MESSAGES
+                )
+                if len(password) < 8:
+                    TestData.error_exit("Password to short", ERRORS_MESSAGES)
+                full_name = TestData.test_not_none_and_strip(
+                    sheet.cell(row=i+3, column=j+x).value, "full_name", ERRORS_MESSAGES
+                )
+                names = full_name.split() if full_name else []
+                first_name = names[0] if names else ""
+                last_name = None if len(names) == 1 else (names[1] if len(names) == 2 else f"{names[1]} {names[2]}")
+                phone_number = TestData.test_not_none_and_strip(
+                    sheet.cell(row=i+5, column=2+x).value, "phone_number", ERRORS_MESSAGES
+                )
+                if phone_number is not None:
+                    phone_number = str(phone_number)
+                    if phone_number.startswith("5"):
+                        phone_number = "0" + phone_number
+                    elif phone_number.startswith("972"):
+                        phone_number = "0" + phone_number[3:]
+                owner_details.append({
+                    "user_name": user,
+                    "password": password,
+                    "group": sheet.cell(row=i+2, column=j+x).value,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": sheet.cell(row=i+4, column=2+x).value,
+                    "phone_number": phone_number
+                })
+ 
 def get_roles():
  i=7
  if sheet.cell(row=i, column=8).value == None:
@@ -211,6 +200,7 @@ def get_shifts():
             if cell_shift and isinstance(cell_shift, str):
                 if shift_name != cell_shift.strip():#Case when shift_name not the same shift of cell_shift
                     TestData.error_exit("Shifts are not coordinate", ERRORS_MESSAGES)
+                    
                 roles_per_shift.append(sheet.cell(row=loop_on_roles, column=8).value)
             loop_on_roles += 2
 
@@ -252,191 +242,155 @@ def get_locations():
 
  TestData.test_locations(locations,features,sum_of_roles_for_locations,roles,ERRORS_MESSAGES)
 
-def split_shifts_for_limits(shifts):
-     if ',' in shifts:
-        return shifts.split(',')
-     else:
-        return shifts.split('/') 
-
-def convert_days_to_range_for_limist(days_for_requests_limits):
-   days= []
-   temp1=days_for_requests_limits[0]
-   temp2=days_for_requests_limits[1]
-   try:
-    index = days_of_week.index(temp1)
-    days.append(index+1)
-    index = days_of_week.index(temp2)
-    days.append(index+1)
-    days=list(range(days[0], days[-1] + 1))
-    return days
-   except Exception as e: 
-    TestData.error_exit("Error with converting days to range for limits",ERRORS_MESSAGES)
-
-def convert_days_for_shabat(day):
-   index = full_name_days_of_week.index(day)
-   return index
-
 def get_requests_limits():
     global days_for_request_limit, shift_daily
     i = 30
     days_for_request_limit = []
-    while sheet.cell(row=i, column=1).value not in ('מגבלות בקשות', 'הגדרת דוחות') and i < 100:
+    while i < 100 and sheet.cell(row=i, column=1).value not in ('מגבלות בקשות', 'הגדרת דוחות'):
         i += 1
     if sheet.cell(row=i, column=1).value == 'הגדרת דוחות' or i == 100:
         TestData.error_exit("Couldnt find requests limits", ERRORS_MESSAGES)
         return
-
-    if sheet.cell(row=i, column=1).value == 'מגבלות בקשות':
-        i += 2  # Move to the first record
-        j = 1
-        while True:
-            limit_name = sheet.cell(row=i, column=j).value
-            if (limit_name is not None and limit_name != '' and
-                sheet.cell(row=i, column=1).value not in ('משמרות לא רצויות', 'מגבלות קבלות')):
-                if  isinstance(limit_name, str):
-                    limit_name = limit_name.strip()
-
-                if '-' in limit_name:
-                    days_for_request_limit = limit_name.split('-')
-                    days_for_request_limit[0] = days_for_request_limit[0][-1]
-                    days_for_request_limit = convert_days_to_range_for_limist(days_for_request_limit)
-                elif limit_name == 'מינימום בקשות סופש':
-                    if not requests_limits:
-                        days_for_request_limit = [6, 7]
-                    else:
-                        last_day = requests_limits[-1]["days"][-1]
-                        days_for_request_limit = [1, 2] if int(last_day) == 7 else [int(last_day) + 1, int(last_day) + 2]
-
-                shift_daily = sheet.cell(row=i, column=j+4).value
-                shift_daily = TestData.test_not_none_and_strip(shift_daily,"shift_daily",ERRORS_MESSAGES)
-                if shift_daily == 'יומי':
-                    shift_daily = 'D'
-                elif shift_daily == 'משמרתי':
-                    shift_daily = 'S'
-                else:
-                    TestData.error_exit("shift / daily is not in the right format", ERRORS_MESSAGES)
-
-                scala = sheet.cell(row=i, column=j+2).value
-                if scala is not None and  isinstance(scala, str) and '-'  in scala:
-                    split_scala = scala.split('-')
-                    min_val, max_val = int(split_scala[0]), int(split_scala[1])
-                    
-                else:
-                  TestData.error_exit("Scala is not defined - requests_limits", ERRORS_MESSAGES)
-                  min_val,max_val=None
-
-                default = sheet.cell(row=i, column=j+3).value
-                if default is None or default == ' ' or not isinstance(default, int):
-                    TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
-
-                requests_limits.append({
-                    "name": limit_name,
-                    "type": 'Req',
-                    "days": days_for_request_limit,
-                    "shift_daily": shift_daily,
-                    "min": min_val,
-                    "max": max_val,
-                    "default": default,
-                })
-                j = 1
-                i += 1
-
-            elif i > 74 or sheet.cell(row=i, column=1).value in ('הגדרת דוחות', 'מגבלות קבלות', 'משמרות לא רצויות'):
-                return
-            else:
-                i += 1
-    else:
+    if sheet.cell(row=i, column=1).value != 'מגבלות בקשות':
         TestData.error_exit("Couldnt find requests limits", ERRORS_MESSAGES)
         return
+
+    i += 2  # Move to the first record
+    while True:
+        limit_name = sheet.cell(row=i, column=1).value
+        if i > 74 or limit_name in ('הגדרת דוחות', 'מגבלות קבלות', 'משמרות לא רצויות'):
+            return
+        if not limit_name or limit_name == '':
+            i += 1
+            continue
+        if isinstance(limit_name, str):
+            limit_name = limit_name.strip()
+        if '-' in limit_name:
+            days_for_request_limit = limit_name.split('-')
+            days_for_request_limit[0] = days_for_request_limit[0][-1]
+            days_for_request_limit = utils.convert_days_to_range_for_limist(days_for_request_limit,days_of_week,ERRORS_MESSAGES)
+        elif limit_name == 'מינימום בקשות סופש':
+            if not requests_limits:
+                days_for_request_limit = [6, 7]
+            else:
+                last_day = requests_limits[-1]["days"][-1]
+                days_for_request_limit = [1, 2] if int(last_day) == 7 else [int(last_day) + 1, int(last_day) + 2]
+
+        shift_daily = sheet.cell(row=i, column=5).value  # column j+4 where j is 1
+        shift_daily = TestData.test_not_none_and_strip(shift_daily, "shift_daily", ERRORS_MESSAGES)
+        if shift_daily == 'יומי':
+            shift_daily = 'D'
+        elif shift_daily == 'משמרתי':
+            shift_daily = 'S'
+        else:
+            TestData.error_exit("shift / daily is not in the right format-requests_limits", ERRORS_MESSAGES)
+
+        scala = sheet.cell(row=i, column=3).value  # column j+2 where j is 1
+        if scala and isinstance(scala, str) and '-' in scala:
+            min_val, max_val = map(int, scala.split('-'))
+        else:
+            TestData.error_exit("Scala is not defined - requests_limits", ERRORS_MESSAGES)
+            min_val, max_val = None, None
+
+        default = sheet.cell(row=i, column=4).value  # column j+3 where j is 1
+        if default is None or default == ' ' or not isinstance(default, int):
+            TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
+
+        requests_limits.append({
+            "name": limit_name,
+            "type": 'Req',
+            "days": days_for_request_limit,
+            "shift_daily": shift_daily,
+            "min": min_val,
+            "max": max_val,
+            "default": default,
+        })
+        i += 1
 
 def get_receives_limits():
     global shift_daily
     i = 45
-    while sheet.cell(row=i, column=1).value not in ('מגבלות קבלות', 'הגדרת דוחות') and i<100:
+    while i < 100 and sheet.cell(row=i, column=1).value not in ('מגבלות קבלות', 'הגדרת דוחות'):
         i += 1
-    limit_name = sheet.cell(row=i, column=1).value
-    if limit_name == 'הגדרת דוחות' or i == 100:
-        TestData.error_exit("Couldnt find receives limits",ERRORS_MESSAGES)
+    if i == 100 or sheet.cell(row=i, column=1).value == 'הגדרת דוחות':
+        TestData.error_exit("Couldnt find receives limits", ERRORS_MESSAGES)
         return
-    if limit_name == 'מגבלות קבלות':
-        i += 2  
-        j = 1
-        while True:
-            limit_name = sheet.cell(row=i, column=j).value
-            if limit_name != None and sheet.cell(row=i, column=1).value != 'הגדרת דוחות':
-                if  isinstance(limit_name, str):
-                    limit_name = limit_name.strip()
-
-                shift_for_limit = sheet.cell(row=i, column=j+1).value
-                shift_for_limit=TestData.test_not_none_and_strip(shift_for_limit,"shift_for_limit",ERRORS_MESSAGES)
-                shift_daily = None  # Reset previous setting
-
-                if ',' in shift_for_limit or '/' in shift_for_limit: #Few shifts
-                    shift_for_limit = split_shifts_for_limits(shift_for_limit)
-                    shift_daily=TestData.test_shift_for_receives_limits(shift_for_limit, shifts,ERRORS_MESSAGES)
-                elif shift_for_limit in ("כולם", "כל המשמרות"): #All shifts
-                    shift_for_limit = [item["name"] for item in shifts if "name" in item]
-                    shift_daily = 'S'
-                else: 
-                    shift_daily=TestData.test_shift_for_receives_limits(shift_for_limit, shifts,ERRORS_MESSAGES)
-
-                if shift_daily is None:
-                    TestData.error_exit("Coludent find shifts for limits - receives_limits",ERRORS_MESSAGES)
-
-                scala = sheet.cell(row=i, column=j+2).value
-                if scala is not None and  isinstance(scala, str) and '-'  in scala:
-                    split_scala = scala.split('-')
-                    min_val, max_val = int(split_scala[0]), int(split_scala[1])    
-                else:
-                  TestData.error_exit("Scala is not defined - receives_limits", ERRORS_MESSAGES)
-                  min_val,max_val=None
-
-                default = sheet.cell(row=i, column=j+3).value
-                if default is None or default == ' ' or not isinstance(default, int):
-                    TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
-
-                is_global = sheet.cell(row=i, column=j+4).value
-                if is_global is None:
-                    is_global = False
-                elif is_global == "כן" or "כן" in is_global:
-                    shift_daily = 'D'
-                    is_global = True
-
-                receives_limits.append({
-                    "name": limit_name,
-                    "shifts": shift_for_limit,
-                    "type": 'Rec',
-                    "shift_daily": shift_daily,
-                    "min": min_val,
-                    "max": max_val,
-                    "default": default,
-                    "is_global": is_global
-                })
-                j = 1
-                i += 1
-
-            elif i > 84 or sheet.cell(row=i, column=1).value == 'הגדרת דוחות':
-                return
-            else:
-                i += 1
-    else:
+    if sheet.cell(row=i, column=1).value != 'מגבלות קבלות':
         TestData.error_exit("Couldnt find recives limits", ERRORS_MESSAGES)
         return
+
+    i += 2  
+    j = 1
+    while True:
+        if i > 84 or sheet.cell(row=i, column=1).value == 'הגדרת דוחות':
+            return
+        limit_name = sheet.cell(row=i, column=j).value
+        if limit_name:
+            if isinstance(limit_name, str):
+                limit_name = limit_name.strip()
+
+            shift_for_limit = TestData.test_not_none_and_strip(
+                sheet.cell(row=i, column=j+1).value, "shift_for_limit", ERRORS_MESSAGES
+            )
+            shift_daily = None
+            if ',' in shift_for_limit or '/' in shift_for_limit:
+                shift_for_limit = utils.split_shifts_for_limits(shift_for_limit)
+                shift_daily = TestData.test_shift_for_receives_limits(shift_for_limit, shifts, ERRORS_MESSAGES)
+            elif shift_for_limit in ("כולם", "כל המשמרות"):
+                shift_for_limit = [item["name"] for item in shifts if "name" in item]
+                shift_daily = 'S'
+            else:
+                shift_daily = TestData.test_shift_for_receives_limits(shift_for_limit, shifts, ERRORS_MESSAGES)
+
+            if shift_daily is None:
+                TestData.error_exit("Coludent find shift_daily for limits - receives_limits", ERRORS_MESSAGES)
+
+            scala = sheet.cell(row=i, column=j+2).value
+            if scala and isinstance(scala, str) and '-' in scala:
+                min_val, max_val = map(int, scala.split('-'))
+            else:
+                TestData.error_exit("Scala is not defined - receives_limits", ERRORS_MESSAGES)
+                min_val, max_val = None, None
+
+            default = sheet.cell(row=i, column=j+3).value
+            if default is None or default == ' ' or not isinstance(default, int):
+                TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
+
+            is_global = sheet.cell(row=i, column=j+4).value
+            if is_global is None:
+                is_global = False
+            elif "כן" in str(is_global):
+                shift_daily = 'D'
+                is_global = True
+
+            receives_limits.append({
+                "name": limit_name,
+                "shifts": shift_for_limit,
+                "type": 'Rec',
+                "shift_daily": shift_daily,
+                "min": min_val,
+                "max": max_val,
+                "default": default,
+                "is_global": is_global
+            })
+            i += 1
+        else:
+            i += 1
 #This function is for yearly or summer and winter Shabat
 def get_shabat_details(i, j, shabat_value, ERRORS_MESSAGES):
     t = j
     while sheet.cell(row=i, column=t).value != "יום התחלה" and t < 20:
         t += 1
     if t == 20:
-        TestData.error_exit(f"Error!! couldn't find start day of Shabat ({shabat_value})", ERRORS_MESSAGES)
+        TestData.error_exit(f"Couldn't find start day of Shabat ({shabat_value})", ERRORS_MESSAGES)
         return None
     t += 1
     if shabat_value == 'שנתי':
         return {
             "name": "שבת",
-            "start_day": convert_days_for_shabat(sheet.cell(row=i, column=t).value),
+            "start_day": utils.convert_days_for_shabat(sheet.cell(row=i, column=t).value,full_name_days_of_week),
             "start_time": sheet.cell(row=i+1, column=t).value,
-            "end_day": convert_days_for_shabat(sheet.cell(row=i+2, column=t).value),
+            "end_day": utils.convert_days_for_shabat(sheet.cell(row=i+2, column=t).value,full_name_days_of_week),
             "end_time": sheet.cell(row=i+3, column=t).value,
             "period": 'Y',
             "religions": [1],
@@ -449,9 +403,9 @@ def get_shabat_details(i, j, shabat_value, ERRORS_MESSAGES):
             t += 1
             shabat_list.append({
                 "name": "שבת",
-                "start_day": convert_days_for_shabat(sheet.cell(row=i, column=t).value),
+                "start_day": utils.convert_days_for_shabat(sheet.cell(row=i, column=t).value),
                 "start_time": sheet.cell(row=i+1, column=t).value,
-                "end_day": convert_days_for_shabat(sheet.cell(row=i+2, column=t).value),
+                "end_day": utils.convert_days_for_shabat(sheet.cell(row=i+2, column=t).value),
                 "end_time": sheet.cell(row=i+3, column=t).value,
                 "period": period,
                 "religions": [1],
@@ -493,7 +447,8 @@ def get_clock():
         i += 1
     if sheet.cell(row=i, column=j).value == 'פושים':
         TestData.error_exit("Error, couldent find clock",ERRORS_MESSAGES)
-        
+        return
+    
     if sheet.cell(row=i, column=j).value == 'סוג שעון':
         clock = sheet.cell(row=i, column=j+1).value
         if clock in general_clock_list:
@@ -540,36 +495,6 @@ def get_features():
             i += 1
     else:
         TestData.error_exit("Couldent find features", ERRORS_MESSAGES)
-
-def find_groups_for_cutting_hours(y,x):
-    while sheet.cell(row=y, column=x).value not in general_perrmisions_list and y > 120:
-        y-=1
-    if sheet.cell(row=y, column=x).value in general_perrmisions_list:
-           return  sheet.cell(row=y, column=x).value
-    else:
-          TestData.error_exit("Couldent find groups for cutting houres",ERRORS_MESSAGES)
-
-def return_perrmisions_id (group):
-      if group=='Headquarters':
-            return 10
-      elif group=='Owners':
-            return 7
-      elif group=='Managers':
-            return 2
-      elif group=='Junior-Managers':
-            return 9
-      elif group=='Senior Sub-Managers':
-            return 8
-      elif group=='Sub-Managers':
-            return 3
-      elif group=='Senior Employees':
-            return 11  
-      elif group=='Employees':
-            return 4
-      elif group=='Junior Employees':
-            return 5
-      elif group=='Automation':
-            return 6
 
 def get_employee_configurations_fields():
     i = 100
@@ -618,7 +543,7 @@ def get_cutting_hours():
                     j += 1
                     continue
                 value = sheet.cell(row=i, column=j+1).value
-                group = return_perrmisions_id(find_groups_for_cutting_hours(i, j+1))
+                group = utils.return_perrmisions_id_ReadData(utils.find_groups_for_cutting_hours(i, j+1,sheet,general_perrmisions_list,ERRORS_MESSAGES))
                 cutting_hours.append({
                     "group_id": group,
                     "attribute": attribute[counter],
