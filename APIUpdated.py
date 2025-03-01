@@ -823,32 +823,6 @@ def create_clock(app_id):
         Features.create_install_clock_attribute(app_id,high_groups_permissions)
         return 
 
-def create_attendance_clock(app_id):
- global unplanned_shift_flag
- unplanned_shift_flag=False
- if ReadData.clock == 'ללא שעון':
-     return
- if any( d.get('name') == 'מזהה שעון' for d in ReadData.employee_configurations):
-        print() #No 
- else:
-      create_employee_configuration(0,app_id,'מזהה שעון',headers)
- if unplanned_shift_flag==False:
-       create_unplanned_shift(app_id,True)  
-       unplanned_shift_flag=True
- Features.create_clock_feature(app_id)
- if ReadData.clock == 'ביומטרי':
-    Features.create_clock_feature(app_id)      
- if ReadData.clock == 'טאביט':
-      if auto_user_created == False:
-         create_automation_user(app_id)
- elif  'אפליקציה' in ReadData.clock:
-      if ReadData.permissions_for_web_clock != None: #For part of the groups
-         permissions_after_convert=convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
-         Features.create_web_clock_attribute(app_id,permissions_after_convert) 
- elif  'תוכנתי' in ReadData.clock:  
-        Features.create_install_clock_attribute(app_id,high_groups_permissions)
-        return 
-
 def create_employee(index,headers,employee_details,app_id):
   groups=get_groups(app_id)
   create_employee_url=env_url+"/api/employees/"
@@ -1211,11 +1185,8 @@ def create_attendance_system():
  headers = {"Authorization": f"Token {token}", "Cats": Cats}
 
  create_role(0,ReadData.roles,app_id)
-
- create_attendance_clock(app_id)
-
- 
- if len(ReadData.shabat) !=0:
+ create_clock(app_id)
+ if ReadData.shabat is not None and len(ReadData.shabat) != 0:
       create_shabat(app_id)
 
  if ReadData.automatic_holidays_special_cost == "כן":
@@ -1226,11 +1197,9 @@ def create_attendance_system():
       else:          
           create_report_coulmn(app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
 
-
  if ReadData.holidays == "כן":
       choose_holiday_area_code()
       create_automatic_holiday(app_id)
-
 
  for i in range(len(ReadData.features)):
   create_features(i,app_id,unplanned_shift_flag)
@@ -1238,7 +1207,6 @@ def create_attendance_system():
    Features.create_cutting_hours_feature(278,ReadData.cutting_hours)
    
  Features.delete_auto_populate_rota(app_id)
-
 
  for i in range(len(ReadData.employee_configurations)):
      create_employee_configuration(i,app_id,ReadData.employee_configurations[i],headers)
@@ -1271,9 +1239,9 @@ load_button = tk.Button(root, text="Load Excel File", command=load_and_convert_e
 load_button.pack(pady=50)
 root.mainloop()
 
-one_system()
+#one_system()
 
-#two_systems_with_one_company()
+two_systems_with_one_company()
 
 #create_attendance_system()
 
