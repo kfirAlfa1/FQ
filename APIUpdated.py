@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import filedialog
 import utils
 
+
 env_url= "https://k8-shift.tabit-dev.com"
 
 # https://k8-shift.tabit-dev.com
@@ -24,12 +25,9 @@ env_url= "https://k8-shift.tabit-dev.com"
 
 days_of_the_week = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
 general_high_groups_permissions=["Headquarters","Owners","Managers"]
-high_groups_permissions=[]
 LIST_OF_ROLES=[]
 auto_user_created=False
 unplanned_shift_flag=False
-
-########################################################################
 
 def send_post_request(url, data, headers, request_name="request", error_message="Error occurred"):
     try:
@@ -73,79 +71,6 @@ def create_company():
  response=send_post_request(create_company_url,data,headers,request_name="create_company",error_message="Error with create_company - API")
  if response != None:
     company_id=response.get("id")
-    
-def return_perrmisions_id (group):
-      if group=='Headquarters':
-            high_groups_permissions.append(10)
-            return 10
-      elif group=='Owners':
-            high_groups_permissions.append(7)
-            return 7
-      elif group=='Managers':
-            high_groups_permissions.append(2)
-            return 2
-      elif group=='Junior-Managers':
-            return 9
-      elif group=='Senior Sub-Managers':
-            return 8
-      elif group=='Sub-Managers':
-            return 3
-      elif group=='Senior Employees' or group=='Senior-employess':
-            return 11  
-      elif group=='Employees':
-            return 4
-      elif group=='Junior Employees' or group=='Junior-employees':
-            return 5
-      elif group=='Automation':
-            return 6
-      else:
-           print("Error!!")
-           print("Couldent find the id of the group")
-           sys.exit()
-
-def change_perrmision_to_english(index):
-  temp =ReadData.perrmisions_list[index]
-  if temp['name_of_group'] == 'מטה':
-      temp['name_of_group'] = 'Headquarters'
-  elif temp['name_of_group'] == 'בעלים':
-          temp['name_of_group'] = 'Owners'
-  elif temp['name_of_group'] == 'מנהלים':
-        temp['name_of_group']= 'Managers' 
-  elif temp['name_of_group'] == 'מנהל מתלמד':
-          temp['name_of_group'] = 'Junior-Managers'
-  elif temp['name_of_group'] == 'מנהלי משמרת':
-        temp['name_of_group'] = 'Senior Sub-Managers'  
-  elif temp['name_of_group'] == 'סגן מנהל משמרת':
-          temp['name_of_group'] = 'Sub-Managers'
-  elif temp['name_of_group'] == ' עובדים' or  temp['name_of_group'] == 'עובדים'  or temp['name_of_group'] == 'עובדים '  :
-        temp['name_of_group'] = 'Employees' 
-  elif temp['name_of_group'] == 'עובדים עם חיתוך שעון':
-          temp['name_of_group'] = 'Junior Employees'
-  else:
-    return 
-
-#Organize the perrmisions in order to fit to the API of creating app
-def organize_groups():
-    global groups
-    groups=[]
-    for i in range(len(ReadData.perrmisions_list)):
-        temp= ReadData.perrmisions_list[i]
-        perrmisions_id=return_perrmisions_id(temp['group'])
-        is_default=temp['default_gruop']
-        if  ReadData.language != 'he':
-             change_perrmision_to_english(i)
-
-        groups.append({
-             "name": temp['name_of_group'],
-             "group_id": perrmisions_id,
-             "is_default": is_default
-              })
-        
-#     groups.append({
-#              "name": "Support",
-#              "group_id": 14,#Support
-#              "is_default": False
-#               })
      
 def return_religions_id (religion):
       if religion=='Jewish':
@@ -201,6 +126,7 @@ def choose_holiday_area_code():
  
 def create_app():
  global app_id
+ global groups
  ReadData.language = utils.choose_language(ReadData.language)
  ReadData.password_security_level = utils.choose_password_security_level(ReadData.password_security_level)
  ReadData.account_number = utils.account_number(ReadData.account_number)
@@ -211,7 +137,7 @@ def create_app():
  last_day_for_subbmit_shifts=days_of_the_week.index(ReadData.last_day_for_subbmit_shifts)
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
  organize_religions()
- organize_groups()
+ groups = utils.organize_groups(ReadData.perrmisions_list, ReadData.language)
  
  create_app_url=env_url+"/api/applications/"
  
@@ -256,7 +182,7 @@ def create_attendance_app():
  last_day_for_subbmit_shifts=days_of_the_week.index(ReadData.last_day_for_subbmit_shifts)
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
  organize_religions()
- organize_groups() 
+ groups = utils.organize_groups(ReadData.perrmisions_list, ReadData.language)
 
  create_app_url=env_url+"/api/applications/"
  
@@ -657,7 +583,7 @@ def create_clock(app_id):
          Features.create_web_clock_attribute(app_id,permissions_after_convert)
          return
  elif  'תוכנתי' in ReadData.clock:
-        Features.create_install_clock_attribute(app_id,high_groups_permissions)
+        Features.create_install_clock_attribute(app_id,utils.high_groups_permissions)
         return 
 
 def create_employee(index,headers,employee_details,app_id):
@@ -839,7 +765,7 @@ def create_report_coulmn(app_id,reports,coulmn_name,name):
             "reports":reports,
             "column":coulmn_name,
             }
-     send_post_request(create_report_coulmn_url,data, headers,request_name="create_report_coulmn"+str(coulmn_name),error_message="Error with create_report_coulmn - API")
+     send_post_request(create_report_coulmn_url,data, headers,request_name="create_report_coulmn "+str(coulmn_name),error_message="Error with create_report_coulmn - API")
 ############################################# 
 def load_and_convert_excel_to_values_only():
     global sheet1 
@@ -1004,8 +930,8 @@ load_button = tk.Button(root, text="Load Excel File", command=load_and_convert_e
 load_button.pack(pady=50)
 root.mainloop()
 
-one_system()
-#two_systems_with_one_company()
+#one_system()
+two_systems_with_one_company()
 #attendance_system()
 
 #For Motti
