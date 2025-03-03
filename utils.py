@@ -63,6 +63,7 @@ def convert_days_to_range_for_limist(days_for_requests_limits,days_of_week,ERROR
 
 ################ API ##############################
 #################################################### 
+high_groups_permissions = []
 
 def choose_language(language):
     if language == 'עברית':
@@ -157,3 +158,66 @@ def convert_role_name_to_id(role_name,role_id,list):
             if roles[j]==role_name:
                  roles[j]=role_id
                  break
+
+def return_perrmisions_id(group):
+    if group == 'Headquarters':
+        high_groups_permissions.append(10)
+        return 10
+    elif group == 'Owners':
+        high_groups_permissions.append(7)
+        return 7
+    elif group == 'Managers':
+        high_groups_permissions.append(2)
+        return 2
+    elif group == 'Junior-Managers':
+        return 9
+    elif group == 'Senior Sub-Managers':
+        return 8
+    elif group == 'Sub-Managers':
+        return 3
+    elif group == 'Senior Employees' or group == 'Senior-employess':
+        return 11  
+    elif group == 'Employees':
+        return 4
+    elif group == 'Junior Employees' or group == 'Junior-employees':
+        return 5
+    elif group == 'Automation':
+        return 6
+    else:
+        print("Error!!")
+        print("Could not find the id of the group")
+
+def change_perrmision_to_english(permissions_list, index):
+    temp = permissions_list[index]
+    if temp['name_of_group'] == 'מטה':
+        temp['name_of_group'] = 'Headquarters'
+    elif temp['name_of_group'] == 'בעלים':
+        temp['name_of_group'] = 'Owners'
+    elif temp['name_of_group'] == 'מנהלים':
+        temp['name_of_group'] = 'Managers'
+    elif temp['name_of_group'] == 'מנהל מתלמד':
+        temp['name_of_group'] = 'Junior-Managers'
+    elif temp['name_of_group'] == 'מנהלי משמרת':
+        temp['name_of_group'] = 'Senior Sub-Managers'
+    elif temp['name_of_group'] == 'סגן מנהל משמרת':
+        temp['name_of_group'] = 'Sub-Managers'
+    elif temp['name_of_group'] in [' עובדים', 'עובדים', 'עובדים ']:
+        temp['name_of_group'] = 'Employees'
+    elif temp['name_of_group'] == 'עובדים עם חיתוך שעון':
+        temp['name_of_group'] = 'Junior Employees'
+    else:
+        return
+
+def organize_groups(permissions_list, language):
+    groups = []
+    for i, temp in enumerate(permissions_list):
+        perrmisions_id = return_perrmisions_id(temp['group'])
+        is_default = temp['default_gruop']
+        if language != 'he':
+            change_perrmision_to_english(permissions_list, i)
+        groups.append({
+            "name": temp['name_of_group'],
+            "group_id": perrmisions_id,
+            "is_default": is_default
+        })
+    return groups
