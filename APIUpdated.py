@@ -9,19 +9,7 @@ import tkinter as tk
 from tkinter import filedialog
 import utils
 
-
 env_url= "https://k8-shift.tabit-dev.com"
-
-# https://k8-shift.tabit-dev.com
-# https://k8-shift.tabit-dev.com/admin
-# https://k8-shift.tabit-dev.com/app/system-settings
-
-# https://il-shift.tabit-int.com
-# https://il-shift.tabit-int.com/admin
-
-# https://il-shift.tabit-stage.com/admin
-#https://il-shift.tabit-stage.com
-
 
 days_of_the_week = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
 general_high_groups_permissions=["Headquarters","Owners","Managers"]
@@ -62,6 +50,29 @@ def get_company(app_id):
     company_id=company.get("id")
     return company_id
 
+def get_app(app_id):
+ get_appliaction_url=env_url+"/api/applications/"+str(app_id)
+ headers = {"Authorization": f"Token {token}"}
+ get_appliaction_request = requests.get(get_appliaction_url,json=None,headers=headers)
+ if get_appliaction_request.status_code == 200:
+      response_data = get_appliaction_request.json()
+      return response_data
+
+ else:
+     print("Error:get_appliaction_request ", get_appliaction_request.status_code)
+     print("API file")
+
+def get_groups(app_id):
+ get_appliaction_url=env_url+"/api/applications/"+str(app_id)
+ headers = {"Authorization": f"Token {token}"}
+ get_appliaction_request = requests.get(get_appliaction_url,json=None,headers=headers)
+ if get_appliaction_request.status_code == 200:
+    response_data = get_appliaction_request.json()
+    groups=response_data.get("groups")
+    return groups
+ else:
+     print("Error:get_appliaction_request ", get_appliaction_request.status_code)
+
 def create_company():
  global company_id
  create_company_url= env_url+"/api/companies/"
@@ -72,61 +83,10 @@ def create_company():
  if response != None:
     company_id=response.get("id")
      
-def return_religions_id (religion):
-      if religion=='Jewish':
-            return 1
-      elif religion =='Christian':
-            return 2
-      elif religion =='Muslim':
-            return 3
-      elif religion =='Foreign':
-            return 4
-      elif religion =='Foreign 2':
-            return 5
-      else:
-          print("Error!!")
-          print("Couldent find the id of the religion")
-          print("API")
-          sys.exit()  
-
-#Organize the religions in order to fit to the API of creating app
-def organize_religions():
-    global religions
-    religions=[]
-    for i in range(len(ReadData.religions_list)):
-        temp=ReadData.religions_list[i]
-        religion_id=return_religions_id(temp['religion'])
-        if  ReadData.language != 'he':
-             if temp['name_of_religion'] == 'יהודי':
-                 temp['name_of_religion'] = 'Jewish'
-             elif temp['name_of_religion'] == 'נוצרי':
-                  temp['name_of_religion'] = 'Christian'
-             elif temp['name_of_religion'] == 'מוסלמי':
-                  temp['name_of_religion'] = 'Muslim'  
-             else:
-                  temp['name_of_religion'] = 'Foreign'      
-             
-        religions.append({
-             "name": temp['name_of_religion'],
-             "religion_id": religion_id,
-             "is_default": temp['default_religion']
-            })
- 
-def choose_holiday_area_code():
-      if type( ReadData.holidays_area)== int:
-           return
-      if ReadData.holidays_area =='תל אביב':
-            ReadData.holidays_area=676
-      elif ReadData.holidays_area =='ירושלים':
-            ReadData.holidays_area = 110
-      elif ReadData.holidays_area =='חיפה':
-            ReadData.holidays_area =1504
-      else:
-           ReadData.holidays_area =1507 #באר שבע כדיפולט 
- 
 def create_app():
  global app_id
  global groups
+ global religions
  ReadData.language = utils.choose_language(ReadData.language)
  ReadData.password_security_level = utils.choose_password_security_level(ReadData.password_security_level)
  ReadData.account_number = utils.account_number(ReadData.account_number)
@@ -136,7 +96,7 @@ def create_app():
  first_day_of_weekend=days_of_the_week.index(ReadData.first_day_of_weekend)
  last_day_for_subbmit_shifts=days_of_the_week.index(ReadData.last_day_for_subbmit_shifts)
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
- organize_religions()
+ religions = utils.organize_religions(ReadData.religions_list, ReadData.language)
  groups = utils.organize_groups(ReadData.perrmisions_list, ReadData.language)
  
  create_app_url=env_url+"/api/applications/"
@@ -181,7 +141,7 @@ def create_attendance_app():
  first_day_of_weekend=days_of_the_week.index(ReadData.first_day_of_weekend)
  last_day_for_subbmit_shifts=days_of_the_week.index(ReadData.last_day_for_subbmit_shifts)
  last_hour_for_subbmit_shifts=str(ReadData.last_hour_for_subbmit_shifts)
- organize_religions()
+ religions = utils.organize_religions(ReadData.religions_list, ReadData.language)
  groups = utils.organize_groups(ReadData.perrmisions_list, ReadData.language)
 
  create_app_url=env_url+"/api/applications/"
@@ -214,90 +174,6 @@ def create_attendance_app():
  if response != None:
    app_id=response.get("id")
 
-def get_app(app_id):
- get_appliaction_url=env_url+"/api/applications/"+str(app_id)
- headers = {"Authorization": f"Token {token}"}
- get_appliaction_request = requests.get(get_appliaction_url,json=None,headers=headers)
- if get_appliaction_request.status_code == 200:
-      response_data = get_appliaction_request.json()
-      return response_data
-
- else:
-     print("Error:get_appliaction_request ", get_appliaction_request.status_code)
-     print("API file")
-
-def get_groups(app_id):
- get_appliaction_url=env_url+"/api/applications/"+str(app_id)
- headers = {"Authorization": f"Token {token}"}
- get_appliaction_request = requests.get(get_appliaction_url,json=None,headers=headers)
- if get_appliaction_request.status_code == 200:
-    response_data = get_appliaction_request.json()
-    groups=response_data.get("groups")
-    return groups
- else:
-     print("Error:get_appliaction_request ", get_appliaction_request.status_code)
-    
-def convert_name_of_group_from_hebrew_to_english(name_of_group):
-  if name_of_group == 'מטה':
-      name_of_group = 'Headquarters'
-      return name_of_group
-  elif name_of_group == 'בעלים':
-      name_of_group = 'Owners'
-      return name_of_group
-  elif name_of_group == 'מנהלים':
-        name_of_group= 'Managers' 
-        return name_of_group
-  else:
-    return
-
-def convert_group_name_to_id(list_target, list_source):
-    # If the input is a single element (string, int, or dict), convert it to a list for uniform processing
-    if isinstance(list_target, (str, int, dict)):
-        list_target = [list_target]
-
-    group_ids = []
-
-    for item in list_target:
-        found = False  # Flag to check if we found a match
-
-        for temp_source in list_source:
-            group_id = temp_source.get("id") or temp_source.get("group_id")
-            group_name = temp_source["name"]
-            group_original_name = temp_source.get("original_name", group_name)
-
-            # Handle dictionaries (extract name_of_group)
-            if isinstance(item, dict):
-                item_name = item.get("name_of_group")
-            else:
-                item_name = item  # Direct string or number
-
-            # Match names and append group_id
-            if item_name in (group_name, group_original_name):
-                group_ids.append(group_id)
-                found = True
-                break
-
-        # If no match is found, raise an error
-        if not found:
-            print(f"Error! Could not find group name or ID for: {item}")
-            sys.exit()
-
-    # If there's only one ID, return it as an integer, otherwise return the list of IDs
-    return group_ids[0] if len(group_ids) == 1 else group_ids
-
-def convert_shift_name_to_id_for_receives_limits(shift_name, shift_id):
-    for i in range(len(ReadData.receives_limits)):
-        temp_limit = ReadData.receives_limits[i]
-        shifts_in_limit = temp_limit["shifts"]
-        if isinstance(shifts_in_limit, list):
-            for j in range(len(shifts_in_limit)):
-                if shifts_in_limit[j] == shift_name:
-                    shifts_in_limit[j] = shift_id
-                    break
-        elif isinstance(shifts_in_limit, str):
-            if shifts_in_limit == shift_name:
-                temp_limit["shifts"] = [shift_id]
-
 def create_role(index,roles,app_id):
  create_role_url=env_url+"/api/roles/"
  data={
@@ -327,7 +203,7 @@ def create_shifts(index,shifts,app_id):
   }
  response=send_post_request(create_shift_url,data,headers,request_name="create_shift "+ str(name),error_message="Error with create_shift - API")
  if response !=None:
-    convert_shift_name_to_id_for_receives_limits(response.get("name"),response.get("id"))
+    utils.convert_shift_name_to_id_for_receives_limits(ReadData.receives_limits,response.get("name"),response.get("id"))
     if response.get("id") != None:
         return 1
     else:
@@ -537,10 +413,12 @@ def create_features(index,app_id):
          create_report_coulmn(app_id,["1","2"],'auto_travel_cost',None)  
 
 def create_unplanned_shift(app_id,attendnce):
+      global unplanned_shift_flag
       global unplanned_shift_id
       unplanned_shift_id=[]
       if attendnce == True:
            name= "נוכחות"
+
            if ReadData.language != 'he':
               name= "Attendnce" 
       else:
@@ -557,6 +435,7 @@ def create_unplanned_shift(app_id,attendnce):
       response=send_post_request(create_unplannedshift_url,data, headers,request_name="create_unplannedshift",error_message="Error with create_unplanned_shift - API")
       if response !=None:
          unplanned_shift_id.append(response.get("id"))
+         unplanned_shift_flag=True
 
 def create_clock(app_id):
  global unplanned_shift_flag
@@ -579,7 +458,7 @@ def create_clock(app_id):
          return
  elif  'אפליקציה' in ReadData.clock:
       if ReadData.permissions_for_web_clock != None: #For part of the groups
-         permissions_after_convert= convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
+         permissions_after_convert= utils.convert_group_name_to_id(ReadData.permissions_for_web_clock, groups)
          Features.create_web_clock_attribute(app_id,permissions_after_convert)
          return
  elif  'תוכנתי' in ReadData.clock:
@@ -609,8 +488,8 @@ def create_employee(index,headers,employee_details,app_id):
   elif phone_number.startswith('972'):
         phone_number='0'+ phone_number[3:]
   group =temp["group"]
-  group= convert_name_of_group_from_hebrew_to_english(group)
-  group=convert_group_name_to_id(group,groups) 
+  group= utils.convert_name_of_group_from_hebrew_to_english(group)
+  group=utils.convert_group_name_to_id(group,groups) 
   if group == None:
        print("Couldent find group id of owners")
        print("The owner has not been established in the system")
@@ -682,7 +561,7 @@ def create_shabat(app_id):
         }
         send_post_request(shabat_url,data, headers,request_name="shabat - Yearly ",error_message="Error with create_shabat - API")
     else:  # אוטומטי
-        choose_holiday_area_code()
+        ReadData.holidays_area = utils.choose_holiday_area_code(ReadData.holidays_area)
         data = {
             "application": app_id,
             "name": "שבת",
@@ -747,7 +626,6 @@ def create_travel_cost(app_id,name,hourly_daily,order):
       "type":'V',
       "order":order
       }
- 
  send_post_request(travel_cost_url,data, headers,request_name="create_travel_cost"+str(name),error_message="Error with create_travel_cost - API")
 
 def create_report_coulmn(app_id,reports,coulmn_name,name):
@@ -839,12 +717,11 @@ def create_system(two_systems_boolean):
    create_report_coulmn(app_id,["3"],'exit_cut',None)
    create_report_coulmn(app_id,["3"],'entry_cut',None)
 
-
  if ReadData.shabat is not None and len(ReadData.shabat) != 0:
       create_shabat(app_id)
 
  if ReadData.holidays == "כן":
-      choose_holiday_area_code()
+      ReadData.holidays_area = utils.choose_holiday_area_code(ReadData.holidays_area)
       create_automatic_holiday(app_id)
 
  if ReadData.automatic_holidays_special_cost == "כן":
@@ -875,10 +752,11 @@ def attendance_system():
  headers = {"Authorization": f"Token {token}", "Cats": Cats}
 
  create_role(0,ReadData.roles,app_id)
+
  unplanned_shift_flag=True
  create_unplanned_shift(app_id,unplanned_shift_flag)
 
- create_clock(app_id,True)
+ create_clock(app_id)
 
  if ReadData.shabat is not None and len(ReadData.shabat) != 0:
       create_shabat(app_id)
@@ -892,7 +770,7 @@ def attendance_system():
           create_report_coulmn(app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
 
  if ReadData.holidays == "כן":
-      choose_holiday_area_code()
+      ReadData.holidays_area = utils.choose_holiday_area_code(ReadData.holidays_area)
       create_automatic_holiday(app_id)
  
  for i in range(len(ReadData.features)):
