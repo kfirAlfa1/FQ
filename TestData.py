@@ -3,7 +3,7 @@ from datetime import time
 ############ Tests ###################
 
 def error_exit(msg,ERRORS_MESSAGES):
-    ERRORS_MESSAGES.append(msg + " \n"+"ReadData")
+    ERRORS_MESSAGES.append(msg + " \nReadData")
    
 def test_the_sheet(sheet):
     valid = (
@@ -38,7 +38,7 @@ def test_religions(religions_list,ERRORS_MESSAGES):
     if default > 1:
          error_exit("There is more than 1 deafult religion", ERRORS_MESSAGES)
 
-def test_shifts(shifts,sheet):
+def test_shifts(shifts,sheet,ERRORS_MESSAGES):
     #Checking whether the existing number of shifts matches the list of shifts on the right side of the table
     i=5
     j=6
@@ -64,14 +64,9 @@ def test_shifts(shifts,sheet):
             if (continuously_of_0 == True and continuously_of_2==True) or (continuously_of_0 == False and continuously_of_2==False):
                 return #Test pass
             else:
-                print("Continuously of shifts are worng!!") 
-                print("ReadData")
-                sys.exit()               
-
-
+                error_exit("Continuously of shifts are worng",ERRORS_MESSAGES)          
         else:
-            print("Number of shifts is not match!!")
-            sys.exit()
+            error_exit("Number of shifts is not match",ERRORS_MESSAGES) 
     else:
         print("Couldent find validation on shifts") 
         print("ReadData")
