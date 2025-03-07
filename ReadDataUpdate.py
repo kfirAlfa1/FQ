@@ -1,6 +1,7 @@
 from datetime import time
 import TestData
 import utils
+import sys
 
 general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers','Senior Sub-Managers','Sub-Managers','Senior-employess','Senior Employees','Employees','Junior Employees','Automation']
 general_religions_list =['Jewish','Christian','Muslim','Foreign']
@@ -8,14 +9,12 @@ general_languages=['עברית','אנגלית','אנגלית (USA)','אנגלי�
 general_country_codes=['ישראל','ארה"ב','אנגליה','רוסיה']
 general_features_list=['לייבור קוסט - LC','עלויות',"פיצ'ר ג'ירפות - הגדרה מראש עם אצבע","פיצ'ר סינטות - תכנון הפסקות",'חופשות','החלפות','היעדרויות','נסיעות','מסמכים','טפסי 101',"פיצ'ר נונו מימי - סידור מפוצל",'משימות','חיתוך שעות']
 general_clock_list= ['ביומטרי','אפליקציה (Web clock)','תוכנתי (Install clock)','טאביט','ללא שעון']
-general_employee_configuration_list= ['תעודת זהות','עיר','כתובת','מיקוד','תאריך תחילת עבודה','תאריך סיום עבודה','דת','מזהה שעון','מספר עובד לשכר','תפקיד ראשי']
+general_employee_configuration_list = ['תעודת זהות','עיר','כתובת','מיקוד','תאריך תחילת עבודה','תאריך סיום עבודה','דת','מזהה שעון','מספר עובד לשכר','תפקיד ראשי']
 continuously_list=[0,1,2,3]
-genral_security_list=['גבוהה','נמוכה','חידוש סיסמה בהתחברות הראשונה']
+genral_security_list=['גבוהה (שליחת פרטי התחברות)','גבוהה','נמוכה','חידוש סיסמה בהתחברות הראשונה']
 days_of_week=['א','ב','ג','ד','ה','ו','ש']
 full_name_days_of_week=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת']
 
-global VALIDATE_DATA
-global ERRORS_MESSAGES
 VALIDATE_DATA=True
 ERRORS_MESSAGES=[]
 
@@ -36,9 +35,7 @@ def get_groups():
         if sheet.cell(row=i, column=3).value == 1:
             group = sheet.cell(row=i, column=1).value
             TestData.test_in_list(group, general_perrmisions_list, "group", ERRORS_MESSAGES)
-            name_of_group = TestData.test_not_none_and_strip(
-                sheet.cell(row=i, column=2).value, "name_of_group", ERRORS_MESSAGES
-            )
+            name_of_group = TestData.test_not_none_and_strip(sheet.cell(row=i, column=2).value, "name_of_group", ERRORS_MESSAGES)
             default_perrmision = (sheet.cell(row=i, column=4).value == 'כן')
             perrmisions_list.append({
                 "group": group,
@@ -83,7 +80,7 @@ def get_application_and_company():
     display_name=sheet.cell(row=14, column=2).value
     display_name=TestData.test_not_none_and_strip(display_name, "display_name",ERRORS_MESSAGES)
     company_name=sheet.cell(row=12, column=2).value
-    if company_name != None: #Case of 2 applicaitons
+    if company_name != None : #Case of 2 applicaitons - If its 2 apps, in API it will not create another comapny
         company_name=TestData.test_not_none_and_strip(company_name, "company_name",ERRORS_MESSAGES)
     language=sheet.cell(row=15, column=2).value
     TestData.test_in_list(language,general_languages,"language",ERRORS_MESSAGES)
@@ -132,21 +129,16 @@ def get_owners():
         j = 2
         for x in range(2):
             user = sheet.cell(row=i, column=j+x).value
-            if user and user.strip():
-                password = TestData.test_not_none_and_strip(
-                    sheet.cell(row=i+1, column=j+x).value, "password", ERRORS_MESSAGES
-                )
+            if user  is not None:
+                user = TestData.test_not_none_and_strip(user, "user", ERRORS_MESSAGES)
+                password = TestData.test_not_none_and_strip(sheet.cell(row=i+1, column=j+x).value, "password", ERRORS_MESSAGES)
                 if len(password) < 8:
                     TestData.error_exit("Password to short", ERRORS_MESSAGES)
-                full_name = TestData.test_not_none_and_strip(
-                    sheet.cell(row=i+3, column=j+x).value, "full_name", ERRORS_MESSAGES
-                )
+                full_name = TestData.test_not_none_and_strip(sheet.cell(row=i+3, column=j+x).value, "full_name", ERRORS_MESSAGES)
                 names = full_name.split() if full_name else []
                 first_name = names[0] if names else ""
                 last_name = None if len(names) == 1 else (names[1] if len(names) == 2 else f"{names[1]} {names[2]}")
-                phone_number = TestData.test_not_none_and_strip(
-                    sheet.cell(row=i+5, column=2+x).value, "phone_number", ERRORS_MESSAGES
-                )
+                phone_number = TestData.test_not_none_and_strip(sheet.cell(row=i+5, column=2+x).value, "phone_number", ERRORS_MESSAGES)
                 if phone_number is not None:
                     phone_number = str(phone_number)
                     if phone_number.startswith("5"):
@@ -211,7 +203,7 @@ def get_shifts():
         })
         j += 1
         i = 4
-    TestData.test_shifts(shifts, sheet)
+    TestData.test_shifts(shifts, sheet,ERRORS_MESSAGES)
     
 def get_locations():
  global sum_of_roles_for_locations
@@ -329,9 +321,7 @@ def get_receives_limits():
             if isinstance(limit_name, str):
                 limit_name = limit_name.strip()
 
-            shift_for_limit = TestData.test_not_none_and_strip(
-                sheet.cell(row=i, column=j+1).value, "shift_for_limit", ERRORS_MESSAGES
-            )
+            shift_for_limit = TestData.test_not_none_and_strip(sheet.cell(row=i, column=j+1).value, "shift_for_limit", ERRORS_MESSAGES)
             shift_daily = None
             if ',' in shift_for_limit or '/' in shift_for_limit:
                 shift_for_limit = utils.split_shifts_for_limits(shift_for_limit)
@@ -577,6 +567,6 @@ def read_all_data(sheet_from_API):
     get_clock()
     get_employee_configurations_fields()
     get_cutting_hours()
-    # if len(ERRORS_MESSAGES) != 0:
-    #     print(ERRORS_MESSAGES)
-    #     sys.exit()
+    if len(ERRORS_MESSAGES) != 0:
+        print(ERRORS_MESSAGES)
+        sys.exit()
