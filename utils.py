@@ -3,7 +3,7 @@ import WorldTimeZones
 from deep_translator import GoogleTranslator
 import requests
 import json
-
+import sys
 ################ ReadData ##########################
 ####################################################
 def return_perrmisions_id_ReadData (group):
@@ -59,7 +59,6 @@ def convert_days_to_range_for_limist(days_for_requests_limits,days_of_week,ERROR
     return days
    except Exception as e: 
     TestData.error_exit("Error with converting days to range for limits",ERRORS_MESSAGES)
-
 
 ################ API ##############################
 #################################################### 
@@ -220,4 +219,119 @@ def organize_groups(permissions_list, language):
             "group_id": perrmisions_id,
             "is_default": is_default
         })
+# groups.append({
+#            "name":'Support',
+#           "group_id": 14,
+#          "is_default": False
+#     })
+
+
     return groups
+
+def return_religions_id(religion):
+    religion_ids = {
+        "Jewish": 1,
+        "Christian": 2,
+        "Muslim": 3,
+        "Foreign": 4,
+        "Foreign 2": 5,
+    }
+    if religion in religion_ids:
+        return religion_ids[religion]
+
+    print("Error!!")
+    print("Could not find the id of the religion")
+
+def change_religion_to_english(religions_list, index):
+    temp = religions_list[index]
+    translation_map = {
+        "יהודי": "Jewish",
+        "נוצרי": "Christian",
+        "מוסלמי": "Muslim"
+    }
+    temp["name_of_religion"] = translation_map.get(temp["name_of_religion"], "Foreign")
+
+def organize_religions(religions_list, language):
+    religions = []
+    for i, temp in enumerate(religions_list):
+        religion_id = return_religions_id(temp["religion"])
+
+        if language != "he":
+            change_religion_to_english(religions_list, i)
+
+        religions.append({
+            "name": temp["name_of_religion"],
+            "religion_id": religion_id,
+            "is_default": temp["default_religion"]
+        })
+    
+    return religions
+
+def choose_holiday_area_code(holidays_area):
+    # If it's already an int, return it unchanged
+    if isinstance(holidays_area, int):
+        return holidays_area
+    if holidays_area == 'תל אביב':
+        return 676
+    elif holidays_area == 'ירושלים':
+        return 110
+    elif holidays_area == 'חיפה':
+        return 1504
+    else:
+        return 1507  # Default to באר שבע
+    
+def convert_name_of_group_from_hebrew_to_english(name_of_group):
+    mapping = {
+        'מטה': 'Headquarters',
+        'בעלים': 'Owners',
+        'מנהלים': 'Managers'
+    }
+    return mapping.get(name_of_group)
+   
+def convert_group_name_to_id(list_target, list_source):
+    # If the input is a single element (string, int, or dict), convert it to a list for uniform processing
+    if isinstance(list_target, (str, int, dict)):
+        list_target = [list_target]
+
+    group_ids = []
+
+    for item in list_target:
+        found = False  # Flag to check if we found a match
+
+        for temp_source in list_source:
+            group_id = temp_source.get("id") or temp_source.get("group_id")
+            group_name = temp_source["name"]
+            group_original_name = temp_source.get("original_name", group_name)
+
+            # Handle dictionaries (extract name_of_group)
+            if isinstance(item, dict):
+                item_name = item.get("name_of_group")
+            else:
+                item_name = item  # Direct string or number
+
+            # Match names and append group_id
+            if item_name in (group_name, group_original_name):
+                group_ids.append(group_id)
+                found = True
+                break
+
+        # If no match is found, raise an error
+        if not found:
+            print(f"Error! Could not find group name or ID for: {item}")
+            sys.exit()
+
+    # If there's only one ID, return it as an integer, otherwise return the list of IDs
+    return group_ids[0] if len(group_ids) == 1 else group_ids
+
+def convert_shift_name_to_id_for_receives_limits(receives_limits, shift_name, shift_id):
+    for i in range(len(receives_limits)):
+        temp_limit = receives_limits[i]
+        shifts_in_limit = temp_limit["shifts"]
+        if isinstance(shifts_in_limit, list):
+            for j in range(len(shifts_in_limit)):
+                if shifts_in_limit[j] == shift_name:
+                    shifts_in_limit[j] = shift_id
+                    break
+        elif isinstance(shifts_in_limit, str):
+            if shifts_in_limit == shift_name:
+                temp_limit["shifts"] = [shift_id]
