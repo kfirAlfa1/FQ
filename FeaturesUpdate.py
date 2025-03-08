@@ -67,24 +67,6 @@ def get_company(app_id):
  else:
      print("Error:get_appliaction_request ", get_appliaction_request.status_code)
 
-def get_group_features(feature_id):
-  requst_url= "https://k8-shift.tabit-dev.com/api/application-group-feature/"+str(feature_id)
-  request = requests.post(requst_url, headers=headers)
-  if request.status_code ==200:
-       print(request.content)
-  else:
-       print("Error!! create_costs_request ")
-       print(request.content) 
-
-def convert_role_name_to_id(role_name,role_id,list):
-     for i in range(len(list)):
-       temp_list=list[i]
-       roles=temp_list["roles"]
-       for j in range(len(roles)):
-            if roles[j]==role_name:
-                 roles[j]=role_id
-                 break  
-
 def organize_groups(groups):
     global automation_group 
     automation_group=False
@@ -232,11 +214,8 @@ def create_install_clock_attribute(app_id,permissions_for_install_clock):
             create_web_clock_attribute(app_id, permissions_for_install_clock)
 
 def create_automation_user(app_id):
-  get_cats(app_id)
-  global company_id
-  company_id= get_company(app_id)
-  company_id=company_id.get('id')
   groups=get_groups(app_id)
+  company_id=get_company(app_id)
   automation_id = None
   for item in groups:
     if item["name"] == "Automation":
@@ -244,31 +223,34 @@ def create_automation_user(app_id):
         break
   create_automation_user=env_url+"/api/employees/"
   data = {
-      "application" : app_id,
+      "application" :app_id,
       "group":automation_id,
       "limits":[],
       "user":
-        {
+      {
         "company":company_id,
         "username":"tabit_auto",
         "password":"tabit"+str(company_id),
-        "group":automation_id,
         "first_name" :'טאביט' ,
         "last_name":'אוטומציה',
-        "phone":'0501111111',
-        "id_number":""
+        "email":"",
+        "phone_number":"0511111111",
         }
-     } 
-  create_automation_user = requests.post(create_automation_user, json=data, headers=headers)
-  if create_automation_user.status_code == 201:
-            json_str = create_automation_user.content.decode('utf-8')
-            data = json.loads(json_str)
-            print(data)
+      }
+  create_automation_user_request = requests.post(create_automation_user, json=data, headers=headers)
+  if create_automation_user_request.status_code == 201:
+            global auto_user_created
+            print("\n Automation user created \n\n")
+            print("API: LC + Attendance")
+            print("username : tabit_auto")
+            print("password : tabit"+ str(company_id))
+            print("company :"+ str(company_id))
+            print("app id  :"+ str(app_id))
+            print()
+            auto_user_created=True
   else:
-            print("Features File")
-            print("Error:create_automation_user getting ", create_automation_user.status_code)
-            print("Error:create_automation_user getting ", create_automation_user.content)
-
+         print(create_automation_user_request.status_code )
+  
 def create_labor_cost_feature(app_id):
   get_cats(app_id)
   groups= get_groups(app_id)
@@ -277,10 +259,8 @@ def create_labor_cost_feature(app_id):
         create_labor_cost_request = send_application_group_feature_request(app_id,6,39,True)#labor cost 
         if create_labor_cost_request.status_code == 201: 
             print("Labor cost created successfully")
-            #create_automation_user(app_id)
         else:
             print("create_labor_cost_request  didnt work" )
-            #create_automation_user(app_id)
   else:
      print("Error!! There is no automation group")
 
@@ -441,8 +421,6 @@ def create_tasks_feature(app_id):
             send_application_group_feature_request(app_id,group_id,40,True)# Tasks feature 
             if group_id in high_groups_id:
              send_application_group_attribute_request(app_id,group_id,192,"True")# tasks_creator attribute
-
-    #Moti said that he will make al the messages_configurations as ture
 # נונו מימי NONO MIMI
 def create_multi_rota_feature(app_id,locations):
     get_cats(app_id)
@@ -470,8 +448,8 @@ def create_multi_rota_feature(app_id,locations):
             data = json.loads(json_str)
             print(data)
         else:
-            print("Error:create_compeny_request getting ", create_location_url.status_code)
-            print("Error:create_compeny_request getting ", create_location_url.content)
+            print("Error:create_multi_rota_feature getting ", create_location_url.status_code)
+            print("Error:create_multi_rota_feature getting ", create_location_url.content)
 
 def create_report_coulmn(app_id,reports,coulmn_name,name):
     get_cats(app_id)
@@ -508,6 +486,7 @@ def create_cutting_hours_feature(app_id,cutting_hours):
         send_application_group_attribute_request(app_id,group_id,attribute,value)# All cutting houres
 
 def delete_auto_populate_rota(app_id):
+    get_cats(app_id)
     groups=get_groups(app_id)
     organize_groups(groups)
     for dictionary in groups:
