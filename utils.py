@@ -27,7 +27,22 @@ def return_perrmisions_id_ReadData (group):
             return 5
       elif group=='Automation':
             return 6
-      
+
+def retrun_permission_id_to_group(permission_id):
+    mapping = {
+        10: 'Headquarters',
+        7: 'Owners',
+        2: 'Managers',
+        9: 'Junior-Managers',
+        8: 'Senior Sub-Managers',
+        3: 'Sub-Managers',
+        11: 'Senior Employees',
+        4: 'Employees',
+        5: 'Junior Employees',
+        6: 'Automation'
+    }
+    return mapping.get(permission_id, "Unknown")
+     
 def split_shifts_for_limits(shifts):
      if ',' in shifts:
         return shifts.split(',')
@@ -59,6 +74,8 @@ def convert_days_to_range_for_limist(days_for_requests_limits,days_of_week,ERROR
     return days
    except Exception as e: 
     TestData.error_exit("Error with converting days to range for limits",ERRORS_MESSAGES)
+
+
 
 ################ API ##############################
 #################################################### 
@@ -335,3 +352,20 @@ def convert_shift_name_to_id_for_receives_limits(receives_limits, shift_name, sh
         elif isinstance(shifts_in_limit, str):
             if shifts_in_limit == shift_name:
                 temp_limit["shifts"] = [shift_id]
+
+
+################ Features ##############################
+#######################################################
+
+def organize_groups_Features(groups, temp_high_groups, temp_low_groups, high_groups_id, low_groups_id):
+    global automation_group # Declare it as global so it can be used outside the function
+    automation_group_Features = False  # Reset before processing
+
+    for dictionary in groups:
+        if dictionary.get("original_name") in temp_high_groups and dictionary.get("id") not in high_groups_id:
+            high_groups_id.append(dictionary.get("id"))
+        elif dictionary.get("original_name") in temp_low_groups and dictionary.get("id") not in low_groups_id:
+            low_groups_id.append(dictionary.get("id"))
+        elif dictionary.get("original_name") == 'Automation':
+            automation_group_Features = True  # Set it if condition matches
+
