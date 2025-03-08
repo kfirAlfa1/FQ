@@ -9,7 +9,8 @@ def test_the_sheet(sheet):
     valid = (
         sheet.cell(row=13, column=1).value == 'שם אפליקציה' and
         sheet.cell(row=14, column=1).value == 'שם תצוגה' and
-        sheet.cell(row=5, column=1).value == 'שם משתמש'
+        sheet.cell(row=5, column=1).value == 'שם משתמש' and
+         sheet.cell(row=7, column=7).value == 'role 1'
     )
     
     if not valid:
