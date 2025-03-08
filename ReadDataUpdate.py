@@ -533,13 +533,18 @@ def get_cutting_hours():
                     j += 1
                     continue
                 value = sheet.cell(row=i, column=j+1).value
+                #  group get the id number of the permission group 
                 group = utils.return_perrmisions_id_ReadData(utils.find_groups_for_cutting_hours(i, j+1,sheet,general_perrmisions_list,ERRORS_MESSAGES))
-                cutting_hours.append({
-                    "group_id": group,
-                    "attribute": attribute[counter],
-                    "value": value
-                })
-                j += 1
+                if any( d.get("group") == utils.retrun_permission_id_to_group(group) for d in perrmisions_list): #Cheack if its relevant to the groups allready added
+                    cutting_hours.append({
+                        "group_id": group,
+                        "attribute": attribute[counter],
+                        "value": value
+                    })
+                    j += 1
+                else:
+                    TestData.error_exit("Error, mismatch between cutting hours and groups in perrmisions_list ",ERRORS_MESSAGES)
+                    return
             if j == 10:
                 i += 1
     else:
