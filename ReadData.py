@@ -1,336 +1,109 @@
-
-import sys
 from datetime import time
+import TestData
+import utils
+import sys
 
 general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers','Senior Sub-Managers','Sub-Managers','Senior-employess','Senior Employees','Employees','Junior Employees','Automation']
 general_religions_list =['Jewish','Christian','Muslim','Foreign']
 general_languages=['עברית','אנגלית','אנגלית (USA)','אנגלית (UK)','אנגלית (ISR)','אנגלית (Tabit US)']
+general_country_codes=['ישראל','ארה"ב','אנגליה','רוסיה']
 general_features_list=['לייבור קוסט - LC','עלויות',"פיצ'ר ג'ירפות - הגדרה מראש עם אצבע","פיצ'ר סינטות - תכנון הפסקות",'חופשות','החלפות','היעדרויות','נסיעות','מסמכים','טפסי 101',"פיצ'ר נונו מימי - סידור מפוצל",'משימות','חיתוך שעות']
 general_clock_list= ['ביומטרי','אפליקציה (Web clock)','תוכנתי (Install clock)','טאביט','ללא שעון']
-general_employee_configuration_list= ['תעודת זהות','עיר','כתובת','מיקוד','תאריך תחילת עבודה','תאריך סיום עבודה','דת','מזהה שעון','מספר עובד לשכר','תפקיד ראשי']
+general_employee_configuration_list = ['תעודת זהות','עיר','כתובת','מיקוד','תאריך תחילת עבודה','תאריך סיום עבודה','דת','מזהה שעון','מספר עובד לשכר','תפקיד ראשי']
 continuously_list=[0,1,2,3]
+genral_security_list=['גבוהה (שליחת פרטי התחברות)','גבוהה','נמוכה','חידוש סיסמה בהתחברות הראשונה']
 days_of_week=['א','ב','ג','ד','ה','ו','ש']
 full_name_days_of_week=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת']
 
-
-###################### Tests ########################
-######################################################
-
-def test_the_sheet():
-    if ('שם אפליקציה' == sheet.cell(row=13, column=1).value 
-        and 'שם תצוגה'== sheet.cell(row=14, column=1).value
-         and 'שם משתמש'== sheet.cell(row=5, column=1).value):
-            return
-    else:
-         print("Not right format of sheet")
-         print("ReadData")
-         sys.exit()
-
-def test_groups(perrmisions_list):
-    default=0
-
-    if len(perrmisions_list) == 0:
-         print("There are no gruops!")
-         print("ReadData")
-         sys.exit()
-
-    for temp in perrmisions_list:
-     if temp.get('default_gruop') == True:
-       default+=1
-    if default > 1:
-         print("There is more than 1 deafult group")
-         print("ReadData")
-         sys.exit()
-
-def test_religions(religions_list):
-    default=0
-    if len(religions_list) == 0:
-         print("There are no religions!")
-         print("ReadData")
-         sys.exit()   
-
-    for temp in religions_list:
-     if temp.get('default_religion') == True:
-       default+=1
-    if default > 1:
-         print("There is more than 1 deafult religion")
-         print("ReadData")
-         sys.exit()
-
-def test_shifts():
-    #Checking whether the existing number of shifts matches the list of shifts on the right side of the table
-    i=5
-    j=6
-    if sheet.cell(row=i, column=j).value == "רשימת משמרות":
-        number_of_shifts=0
-        while sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value != '':
-            i+=1
-            if sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value != '':
-                number_of_shifts+=1
-        if len(shifts)== number_of_shifts:
-            # Test pass
-            #Checking if there are continuesly shifts if they valid or not
-            continuously_of_0= False
-            continuously_of_2= False
-
-            for temp in shifts:
-                if temp.get('continuously') == 0 :
-                    continuously_of_0 =True
-
-                if temp.get('continuously') == 2 :
-                        continuously_of_2=True
-            
-            if (continuously_of_0 == True and continuously_of_2==True) or (continuously_of_0 == False and continuously_of_2==False):
-                return #Test pass
-          
-
-            else:
-                print("Continuously of shifts are worng!!") 
-                print("ReadData")
-                sys.exit()               
-
-
-        else:
-            print("Number of shifts is not match!!")
-            sys.exit()
-    else:
-        print("Couldent find validation on shifts") 
-        print("ReadData")
-        sys.exit()
-
-def test_shift_for_receives_limits(list_of_shifts):
-        global shift_daily
-        counter=0
-        for i in range(len(list_of_shifts)):
-          if any(shift["name"] == list_of_shifts[i] for shift in shifts):
-                counter+=1
-                shift_daily = 'S'
-                continue
-
-        if counter == len(list_of_shifts): #All the sifts inside the limit are in the shift list
-            return
-        else:
-         print("Error!!")
-         print("Couldnt find shifts of receives limits")
-         print("ReadData")
-         sys.exit()
-
-def test_locations():
-    nono_test = False
-    locations_test=False
-
-    if len(locations)>0 :
-        locations_test=True
-
-    if any("נונו מימי"  in feature for feature in features): 
-        nono_test = True
-    
-
-    if nono_test == True and locations_test == True: 
-        if sum_of_roles_for_locations == len(roles): #Cheack that all the roles have location
-             return
-        else:
-          print("There are roles without locations!!")
-          print("ReadData")
-          sys.exit()
-
-    if nono_test == False and locations_test == False:
-        return
-    else:
-        print("Error!!")
-        if len(locations) >0 :
-         print("There are locations but NONO MIMI feature is not True!!")
-         print("ReadData")
-         sys.exit()
-        else:
-         print(" NONO MIMI feature is True but there are no locations!!")
-         print("ReadData")
-         sys.exit()
-
-def test_web_clock(list_of_permission):
-  counter=0
-  for i in range(len(list_of_permission)):
-      if any(group["name_of_group"] == list_of_permission[i] for group in perrmisions_list):
-       counter+=1
-
-  if counter == len(list_of_permission):
-      return
-  else:
-     print("permissions for web clock are not inside perrmisions names")
-     print("ReadData")
-     sys.exit()  
-
-def test_features():
-    if 'לייבור קוסט - LC' in features:
-        if any(group["group"] == "Automation" for group in perrmisions_list):
-            return
-        else:
-         print("There is labor cost but not Automation group")
-         print("ReadData")
-         sys.exit()    
-
-
-######################################################
+VALIDATE_DATA=True
+ERRORS_MESSAGES=[]
 
 def get_groups():
     global default_perrmision
-    i=5
-    while sheet.cell(row=i, column=1).value != 'דתות' and i<50 and sheet.cell(row=i, column=1).value != 'קבוצות - הרשאות ניהול' :
-        i+=1
-    if sheet.cell(row=i, column=1).value == 'קבוצות - הרשאות ניהול' :
-        i+=2
-        while sheet.cell(row=i, column=1).value != 'דתות' and i<50:
-            temp=sheet.cell(row=i, column=3).value
-            if temp == 1:
-                j=i
-                group=sheet.cell(row=j, column=1).value
-                if group not in general_perrmisions_list: #Cheack if permission exist
-                    print("Error with permission: " + str(group))
-                    print("ReadData")
-                    sys.exit()
+    i = 5
+    while i < 50:
+        val = sheet.cell(row=i, column=1).value
+        if val in ['דתות', 'קבוצות - הרשאות ניהול']:
+            break
+        i += 1
 
-                name_of_group=sheet.cell(row=j, column=2).value
-                if  None == name_of_group or ' ' == name_of_group:
-                    print("Error with name_of_group in ReadData")
-                    sys.exit()
-                #Check if default
-                if sheet.cell(row=j, column=4).value == 'כן':
-                    default_perrmision=True
-                else:
-                    default_perrmision=False
-            
-                perrmisions_list.append( {
-                "group":group,
-                "name_of_group":name_of_group,
-                "default_gruop":default_perrmision,
-                })
-                
-                i+=1
-            else:
-                i+=1   
+    if sheet.cell(row=i, column=1).value != 'קבוצות - הרשאות ניהול':
+        TestData.error_exit("Cant find gruops!", ERRORS_MESSAGES)
 
-        if sheet.cell(row=i, column=1).value == 'דתות':
-                return 
-    else:
-        print("There are no gruops!")
-        print("ReadData")
-        sys.exit()
+    i += 2
+    while i < 50 and sheet.cell(row=i, column=1).value != 'דתות':
+        if sheet.cell(row=i, column=3).value == 1:
+            group = sheet.cell(row=i, column=1).value
+            TestData.test_in_list(group, general_perrmisions_list, "group", ERRORS_MESSAGES)
+            name_of_group = TestData.test_not_none_and_strip(sheet.cell(row=i, column=2).value, "name_of_group", ERRORS_MESSAGES)
+            default_perrmision = (sheet.cell(row=i, column=4).value == 'כן')
+            perrmisions_list.append({
+                "group": group,
+                "name_of_group": name_of_group,
+                "default_gruop": default_perrmision,
+            })
+        i += 1
+
+    if sheet.cell(row=i, column=1).value == 'דתות':
+        return
 
 def get_religions():
     global default_religion
-    i=10
-    while sheet.cell(row=i, column=1).value != 'דתות' and i<60 and sheet.cell(row=i, column=1).value != 'מגבלות בקשות' :
-        i+=1
+    i = 10
+    while i < 60 and sheet.cell(row=i, column=1).value not in ('דתות', 'מגבלות בקשות'):
+        i += 1
     if sheet.cell(row=i, column=1).value == 'דתות':
-      i+=2
-      while sheet.cell(row=i, column=1).value != 'מגבלות בקשות' and i<60:
-        temp=sheet.cell(row=i, column=3).value 
-        if temp == 1:
-            j=i
-            religion=sheet.cell(row=j, column=1).value
-            if religion not in general_religions_list:
-                print("Error with religion: " + str(religion))
-                print("ReadData")
-                sys.exit()
+        i += 2
+        while i < 60 and sheet.cell(row=i, column=1).value != 'מגבלות בקשות':
+            if sheet.cell(row=i, column=3).value == 1:
+                religion = sheet.cell(row=i, column=1).value
+                TestData.test_in_list(religion,general_religions_list,"religion",ERRORS_MESSAGES)#Cheack if religion exist
+                name_of_religion = sheet.cell(row=i, column=2).value
+                name_of_religion=TestData.test_not_none_and_strip(name_of_religion,"Error with name_of_religion",ERRORS_MESSAGES)
+                default_religion = (sheet.cell(row=i, column=4).value == 'כן')
+                religions_list.append({
+                    "religion": religion,
+                    "name_of_religion": name_of_religion,
+                    "default_religion": default_religion,
+                })
+            i += 1
+    else:
+     TestData.error_exit("Cant find religions!",ERRORS_MESSAGES)
 
-            name_of_religion= sheet.cell(row=j, column=2).value
-            #Validtion for religions
-            if  None == name_of_religion or ' ' == name_of_religion:
-             print("Error with name_of_religion in ReadData")
-             sys.exit()
-            #Check if default
-            if sheet.cell(row=j, column=4).value == 'כן':
-                default_religion=True
-            else:
-                default_religion=False
-
-            religions_list.append({
-            "religion":religion,
-            "name_of_religion":name_of_religion,
-            "default_religion":default_religion,
-            })
-
-            i+=1
-
-        else:
-           i+=1  
-    # else:
-    #     print("There are no religions!")
-    #     print("ReadData")
-    #     sys.exit()
-
-#Compeny and app details 
 def get_application_and_company():
-    global app_name
-    global display_name
-    global company_name
-    global language
-    global time_zone
-    global country_code
-    global first_day_of_week
-    global first_day_of_weekend
-    global last_day_for_subbmit_shifts
-    global last_hour_for_subbmit_shifts
-    global password_security_level
-    global account_number
-    global industry
-    global type
-    global stage    
-    global plan
-    global max_employees
-    global color_palette
-    global usability_check
-    global active 
-
-    #From Excel
+    global app_name, display_name, company_name, language, time_zone, country_code, first_day_of_week, first_day_of_weekend
+    global last_day_for_subbmit_shifts, last_hour_for_subbmit_shifts, password_security_level, account_number
+    global industry, type, stage, plan, max_employees, color_palette, usability_check, active
+     
     app_name=sheet.cell(row=13, column=2).value
-    if app_name == None:
-        print( "ReadData")
-        print( "No app_name")
-        sys.exit()
-    app_name=app_name.strip()
+    app_name=TestData.test_not_none_and_strip(app_name, "app_name",ERRORS_MESSAGES)
     display_name=sheet.cell(row=14, column=2).value
-    if display_name == None:
-        print( "ReadData")
-        print( "No display_name")
-        sys.exit()
-    display_name=display_name.strip()
+    display_name=TestData.test_not_none_and_strip(display_name, "display_name",ERRORS_MESSAGES)
     company_name=sheet.cell(row=12, column=2).value
-    if company_name != None:
-        company_name=company_name.strip()
+    if company_name != None : #Case of 2 applicaitons - If its 2 apps, in API it will not create another comapny
+        company_name=TestData.test_not_none_and_strip(company_name, "company_name",ERRORS_MESSAGES)
     language=sheet.cell(row=15, column=2).value
-    if language not in general_languages:
-        print( "ReadData")
-        print( "No language")
-        sys.exit()
+    TestData.test_in_list(language,general_languages,"language",ERRORS_MESSAGES)
     time_zone=sheet.cell(row=16, column=2).value
-    time_zone=time_zone.strip()
+    time_zone=TestData.test_not_none_and_strip(time_zone, "time_zone",ERRORS_MESSAGES)
     country_code=sheet.cell(row=17, column=2).value
+    TestData.test_in_list(country_code,general_country_codes,"country_code",ERRORS_MESSAGES)
     first_day_of_week=sheet.cell(row=18, column=2).value
-    if first_day_of_week not in full_name_days_of_week:
-        print( "ReadData")
-        print( "No first_day_of_week")
-        sys.exit()
+    TestData.test_in_list(first_day_of_week,full_name_days_of_week,"first_day_of_week",ERRORS_MESSAGES)
     first_day_of_weekend=sheet.cell(row=19, column=2).value
-    if first_day_of_weekend not in full_name_days_of_week:
-        print( "ReadData")
-        print( "No first_day_of_weekend")
-        sys.exit()
+    TestData.test_in_list(first_day_of_weekend,full_name_days_of_week,"first_day_of_weekend",ERRORS_MESSAGES)
     last_day_for_subbmit_shifts=sheet.cell(row=20, column=2).value
-    if last_day_for_subbmit_shifts not in full_name_days_of_week:
-        print( "ReadData")
-        print( "No first_day_of_weekend")
-        sys.exit()
+    TestData.test_in_list(first_day_of_weekend,full_name_days_of_week,"first_day_of_weekend",ERRORS_MESSAGES)
     last_hour_for_subbmit_shifts=sheet.cell(row=21, column=2).value
-    if not isinstance(last_hour_for_subbmit_shifts, time): 
-        print( "ReadData")
-        print( "last_hour_for_subbmit_shifts is not in time format")
-        sys.exit()
+    TestData.test_type(last_hour_for_subbmit_shifts, time, "last_hour_for_subbmit_shifts",ERRORS_MESSAGES)
     password_security_level=sheet.cell(row=22, column=2).value
+    password_security_level=TestData.test_not_none_and_strip(password_security_level,"password_security_level",ERRORS_MESSAGES)
+    TestData.test_in_list(password_security_level,genral_security_list,"password_security_level",ERRORS_MESSAGES)
     account_number=sheet.cell(row=23, column=2).value
-
-    #From webstie
-
+    if account_number != None:
+         TestData.test_type(account_number, int, "account_number",ERRORS_MESSAGES)
+    
+    #From webstie- default
     industry='Restaurants' 
     type= 'P' #Planned work scedule
     stage= 0
@@ -340,139 +113,98 @@ def get_application_and_company():
     usability_check= True
     active= True
 
-
-
-    #Permissions
     get_groups()
+    TestData.test_groups(perrmisions_list,ERRORS_MESSAGES)
 
-    test_groups(perrmisions_list)
-    
-   #Religions
     get_religions()
-
-    test_religions(religions_list)
+    TestData.test_religions(religions_list,ERRORS_MESSAGES)
      
 def get_owners():
- i=3
- while sheet.cell(row=i, column=1).value != 'שם חברה' and sheet.cell(row=i, column=1).value !='שם משתמש' and i<30:
-        i+=1
- if sheet.cell(row=i, column=1).value =='שם חברה' or i== 30:
-     return "Couldnt find owner details " #Not necessarily an error- sheet2
- if sheet.cell(row=i, column=1).value =='שם משתמש': 
-    j=2 
-    for x in range(2):
-     if sheet.cell(row=i, column=j+x).value != None and sheet.cell(row=i, column=j+x).value != ' ' : #Check if user name exist
-
-        password=sheet.cell(row=i+1, column=j+x).value
-        if password == None or password == ' ' or len(password)<8: #Password validation
-            print("No password for owner OR invalid password, its mandatory")
-            print("ReadData")
-            sys.exit()
-
-        full_name =sheet.cell(row=i+3, column=j+x).value
-        if full_name == None:
-            print("No name for owner, its mandatory")
-            print("ReadData")
-            sys.exit()
-        full_name =full_name.split(' ')
-        first_name=full_name[0]
-        if len (full_name) == 1:
-            last_name=None
-        elif len (full_name) == 2:
-            last_name=full_name[1]
-        elif len (full_name) > 2:
-            last_name=full_name[1] + ' ' + full_name[2]
-    
-
-        phone_number=sheet.cell(row=i+5, column=2+x).value
-        if phone_number == None:
-            print("No phone for owner, its mandatory")
-            print("ReadData")
-            sys.exit()
-
-        owner_details.append(
-        {
-            "user_name":sheet.cell(row=i, column=j+x).value,
-            "password":password,
-            "group":sheet.cell(row=i+2, column=j+x).value,
-            "first_name":first_name,
-            "last_name":last_name,
-            "email":sheet.cell(row=i+4, column=2+x).value,
-            "phone_number":phone_number
-        })
-  
-# Tow validations: 
-# 1- Checking if the first value is not NULL
-# 2- Checking if the role does not already exist
+    i = 3
+    while i < 30 and sheet.cell(row=i, column=1).value not in ['שם חברה', 'שם משתמש']:
+        i += 1
+    if sheet.cell(row=i, column=1).value == 'שם חברה' or i == 30:
+        return "Couldnt find owner details "
+    if sheet.cell(row=i, column=1).value == 'שם משתמש':
+        j = 2
+        for x in range(2):
+            user = sheet.cell(row=i, column=j+x).value
+            if user  is not None:
+                user = TestData.test_not_none_and_strip(user, "user", ERRORS_MESSAGES)
+                password = TestData.test_not_none_and_strip(sheet.cell(row=i+1, column=j+x).value, "password", ERRORS_MESSAGES)
+                if len(password) < 8:
+                    TestData.error_exit("Password to short", ERRORS_MESSAGES)
+                full_name = TestData.test_not_none_and_strip(sheet.cell(row=i+3, column=j+x).value, "full_name", ERRORS_MESSAGES)
+                names = full_name.split() if full_name else []
+                first_name = names[0] if names else ""
+                last_name = None if len(names) == 1 else (names[1] if len(names) == 2 else f"{names[1]} {names[2]}")
+                phone_number = TestData.test_not_none_and_strip(sheet.cell(row=i+5, column=2+x).value, "phone_number", ERRORS_MESSAGES)
+                if phone_number is not None:
+                    phone_number = str(phone_number)
+                    if phone_number.startswith("5"):
+                        phone_number = "0" + phone_number
+                    elif phone_number.startswith("972"):
+                        phone_number = "0" + phone_number[3:]
+                owner_details.append({
+                    "user_name": user,
+                    "password": password,
+                    "group": sheet.cell(row=i+2, column=j+x).value,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": sheet.cell(row=i+4, column=2+x).value,
+                    "phone_number": phone_number
+                })
+ 
 def get_roles():
  i=7
  if sheet.cell(row=i, column=8).value == None:
-     print("ReadData")
-     print("No roles found")
-     print ("i = "+str(i)+ " j=8")
-     sys.exit()
+     TestData.error_exit("No roles found i = "+str(i)+ " j=8",ERRORS_MESSAGES)
+     return
  while sheet.cell(row=i, column=8).value != None:
         if sheet.cell(row=i, column=8).value not in roles:
             roles.append(sheet.cell(row=i, column=8).value)
             i+=2
             continue
         else:
-            print(sheet.cell(row=i, column=8).value)
-            print("Error!!! This role is allready in the list!!!")
-            print("ReadData")
-            sys.exit()
+             TestData.error_exit(str(sheet.cell(row=i, column=8).value)+ "This role is allready in the list: " ,ERRORS_MESSAGES)
+             return
  if sheet.cell(row=i+2, column=8).value != None and sheet.cell(row=i+2, column=8).value != ' ':
-            print("Error!!! There are spaces with roles!!!")
-            print("ReadData")
-            sys.exit()
-     
-# 1- Checking if the total number of shifts is correct
+            TestData.error_exit(" There are spaces with roles!!! " ,ERRORS_MESSAGES)
+
 def get_shifts():
     i = 4
     j = 9
     flag = True
 
     while flag:
-        roles_per_shift = []  
-        if (sheet.cell(row=i, column=j).value is None 
-            or sheet.cell(row=i, column=j).value =='' 
-            or sheet.cell(row=i, column=j).value == "משמרת1"):
+        shift_name = sheet.cell(row=i, column=j).value
+        if shift_name in (None, '', "משמרת1"):
+            break
 
-            flag = False 
-            break   
+        shift_name = shift_name.strip()
+        continuously = sheet.cell(row=i+2, column=j).value
+        TestData.test_in_list(continuously, continuously_list, "continuously", ERRORS_MESSAGES)
 
-        shift_name = sheet.cell(row=i, column=j).value 
-        shift_name=shift_name.strip()
-        continuously=sheet.cell(row=i+2, column=j).value
-        if continuously not in continuously_list:
-            print("Error, continuously is not correct")
-            print("ReadData")
-            sys.exit()
-        loop_on_roles=i+3
-        for counter in range(len(roles)):
-         if sheet.cell(row=loop_on_roles, column=j).value is not None : #check if the shift is the same shift
-            if shift_name != sheet.cell(row=loop_on_roles, column=j).value.strip():
-                        print("Error, the shifts are not coordinate")
-                        print("ReadData")
-                        sys.exit()
-            role = sheet.cell(row=loop_on_roles, column=8).value 
-            roles_per_shift.append(role)
-            loop_on_roles+= 2 
-         else:
-             loop_on_roles+=2 
+        roles_per_shift = []
+        loop_on_roles = i + 3
+        for _ in range(len(roles)):
+            cell_shift = sheet.cell(row=loop_on_roles, column=j).value
+            if cell_shift and isinstance(cell_shift, str):
+                if shift_name != cell_shift.strip():#Case when shift_name not the same shift of cell_shift
+                    TestData.error_exit("Shifts are not coordinate", ERRORS_MESSAGES)
+                    
+                roles_per_shift.append(sheet.cell(row=loop_on_roles, column=8).value)
+            loop_on_roles += 2
 
-        shifts.append(
-            {
-             "name":shift_name,
-             "roles":roles_per_shift,
-             "continuously":continuously
-             })
-        j += 1 
+        shifts.append({
+            "name": shift_name,
+            "roles": roles_per_shift,
+            "continuously": continuously
+        })
+        j += 1
         i = 4
+    TestData.test_shifts(shifts, sheet,ERRORS_MESSAGES)
     
-    #Checking whether the existing number of shifts matches the list of shifts on the right side of the table
-    test_shifts()
-
 def get_locations():
  global sum_of_roles_for_locations
  sum_of_roles_for_locations=0
@@ -500,580 +232,333 @@ def get_locations():
          }) 
         sum_of_roles_for_locations+=len(roles_per_location)  
 
- test_locations()
-
-def split_shifts_for_limits(shifts):
-     if ',' in shifts:
-        return shifts.split(',')
-     else:
-        return shifts.split('/') 
-
-def convert_days_to_range_for_limist(days_for_requests_limits):
-   days= []
-   temp1=days_for_requests_limits[0]
-   temp2=days_for_requests_limits[1]
-   try:
-    index = days_of_week.index(temp1)
-    days.append(index+1)
-    index = days_of_week.index(temp2)
-    days.append(index+1)
-    days=list(range(days[0], days[-1] + 1))
-    return days
-   except Exception as e:  # Catches any exception and stores it in 'e'
-    print(f"An error occurred: {e}")
-
-def convert_days_for_shabat(day):
-   index = full_name_days_of_week.index(day)
-   return index
+ TestData.test_locations(locations,features,sum_of_roles_for_locations,roles,ERRORS_MESSAGES)
 
 def get_requests_limits():
- i=30
- global days_for_request_limit 
- global shift_daily
- days_for_request_limit=[]
- while sheet.cell(row=i, column=1).value != 'מגבלות בקשות' and sheet.cell(row=i, column=1).value !='הגדרת דוחות':
-        i+=1
- if sheet.cell(row=i, column=1).value =='הגדרת דוחות':
-        print("Error!!")
-        print("Couldnt find requests limits")
-        print("ReadData")
-        sys.exit()
+    global days_for_request_limit, shift_daily
+    i = 30
+    days_for_request_limit = []
+    while i < 100 and sheet.cell(row=i, column=1).value not in ('מגבלות בקשות', 'הגדרת דוחות'):
+        i += 1
+    if sheet.cell(row=i, column=1).value == 'הגדרת דוחות' or i == 100:
+        TestData.error_exit("Couldnt find requests limits", ERRORS_MESSAGES)
+        return
+    if sheet.cell(row=i, column=1).value != 'מגבלות בקשות':
+        TestData.error_exit("Couldnt find requests limits", ERRORS_MESSAGES)
+        return
 
- if sheet.cell(row=i, column=1).value == 'מגבלות בקשות':      
-    i+=2 # To get to the line of the first recive
-    j=1
-    flag = True
-    while flag:
-     if(sheet.cell(row=i, column=j).value != None 
-        and sheet.cell(row=i, column=j).value !=''
-        and  'משמרות לא רצויות' != sheet.cell(row=i, column=1).value
-        and  'מגבלות קבלות' != sheet.cell(row=i, column=1).value):
-         
-         limit_name = sheet.cell(row=i, column=j).value.strip()
+    i += 2  # Move to the first record
+    while True:
+        limit_name = sheet.cell(row=i, column=1).value
+        if i > 74 or limit_name in ('הגדרת דוחות', 'מגבלות קבלות', 'משמרות לא רצויות'):
+            return
+        if not limit_name or limit_name == '':
+            i += 1
+            continue
+        if isinstance(limit_name, str):
+            limit_name = limit_name.strip()
+        if '-' in limit_name:
+            days_for_request_limit = limit_name.split('-')
+            days_for_request_limit[0] = days_for_request_limit[0][-1]
+            days_for_request_limit = utils.convert_days_to_range_for_limist(days_for_request_limit,days_of_week,ERRORS_MESSAGES)
+        elif limit_name == 'מינימום בקשות סופש':
+            if not requests_limits:
+                days_for_request_limit = [6, 7]
+            else:
+                last_day = requests_limits[-1]["days"][-1]
+                days_for_request_limit = [1, 2] if int(last_day) == 7 else [int(last_day) + 1, int(last_day) + 2]
 
-         if not isinstance(limit_name, str):
-            print("Error!!")
-            print("limit_name is not string")
-            print("ReadData")
-            sys.exit()
+        shift_daily = sheet.cell(row=i, column=5).value  # column j+4 where j is 1
+        shift_daily = TestData.test_not_none_and_strip(shift_daily, "shift_daily", ERRORS_MESSAGES)
+        if shift_daily == 'יומי':
+            shift_daily = 'D'
+        elif shift_daily == 'משמרתי':
+            shift_daily = 'S'
+        else:
+            TestData.error_exit("shift / daily is not in the right format-requests_limits", ERRORS_MESSAGES)
 
-         
-         if '-' in limit_name:
-             days_for_request_limit= limit_name.split('-')
-             days_for_request_limit[0]=days_for_request_limit[0][-1]
-             days_for_request_limit=convert_days_to_range_for_limist(days_for_request_limit)
+        scala = sheet.cell(row=i, column=3).value  # column j+2 where j is 1
+        if scala and isinstance(scala, str) and '-' in scala:
+            min_val, max_val = map(int, scala.split('-'))
+        else:
+            TestData.error_exit("Scala is not defined - requests_limits", ERRORS_MESSAGES)
+            min_val, max_val = None, None
 
-         elif 'מינימום בקשות סופש'== limit_name:
-             if  not requests_limits:  
-              days_for_request_limit=[6,7]
-             else:
-              temp=requests_limits[-1]
-              last_day_of_requests=temp["days"]
-              last_day_of_requests=last_day_of_requests[-1]
-              if int(last_day_of_requests) == 7:
-                days_for_request_limit= [1,2]
-              else:
-                 days_for_request_limit= [int(last_day_of_requests)+1,int(last_day_of_requests)+2]  
+        default = sheet.cell(row=i, column=4).value  # column j+3 where j is 1
+        if default is None or default == ' ' or not isinstance(default, int):
+            TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
 
-         shift_daily=sheet.cell(row=i, column=j+4).value
-
-         if shift_daily == None or shift_daily == ' ' or not isinstance(shift_daily, str) :
-            print("Error!!")
-            print("shift / daily is not defined / type of string")
-            print("ReadData")
-            sys.exit()
-
-             
-         shift_daily=shift_daily.strip()
-         if shift_daily == 'יומי':
-             shift_daily='D'
-         elif shift_daily =='משמרתי' :
-             shift_daily='S'
-         else:
-            print("Error!!")
-            print("shift / daily is not in the right format")
-            print("ReadData")
-            sys.exit()
-
-         
-         scala=sheet.cell(row=i, column=j+2).value
-         
-         if  scala == None or scala == ' ' or isinstance(scala, int) or  '-' not in scala:
-            print("Error!!")
-            print("scala is not defined - requests_limits")
-            print("ReadData")
-            sys.exit()            
-           
-         else:
-            split_scala= scala.split('-')
-            min=int(split_scala[0])
-            max=int(split_scala[1])
-         
-
-         default=sheet.cell(row=i, column=j+3).value
-         if  default == None or default == ' ' or not isinstance(default, int):
-            print("Error!!")
-            print("default  - requests_limits")
-            print("ReadData")
-            sys.exit() 
-
-         requests_limits.append(
-         {
+        requests_limits.append({
             "name": limit_name,
-            "type":'Req',
-            "days":days_for_request_limit ,
-            "shift_daily":shift_daily,
-            "min":min,
-            "max":max,
-            "default":default,
-         }) 
-
-         j=1 
-         i+=1
-
-     elif( i > 74 or  'הגדרת דוחות' == sheet.cell(row=i, column=1).value
-              or 'מגבלות קבלות' == sheet.cell(row=i, column=1).value
-              or 'משמרות לא רצויות' == sheet.cell(row=i, column=1).value):
-            flag=False
-            return 
-     else:
-            i+=1
-      
-    else:
-        print("Error!!")
-        print("Couldnt find requests limits")
-        print("ReadData")
-        sys.exit()
+            "type": 'Req',
+            "days": days_for_request_limit,
+            "shift_daily": shift_daily,
+            "min": min_val,
+            "max": max_val,
+            "default": default,
+        })
+        i += 1
 
 def get_receives_limits():
- global shift_daily
- i=45
- while sheet.cell(row=i, column=1).value != 'מגבלות קבלות' and sheet.cell(row=i, column=1).value !='הגדרת דוחות':
-        i+=1
- if sheet.cell(row=i, column=1).value =='הגדרת דוחות':
-        print("Error!!")
-        print("Couldnt find receives limits")
-        print("ReadData")
-        sys.exit()
- if sheet.cell(row=i, column=1).value =='מגבלות קבלות':      
-    i+=2
-    j=1
-    flag = True
-    while flag:
-        if sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value !=''and 'הגדרת דוחות' != sheet.cell(row=i, column=1).value:
-         limit_name = sheet.cell(row=i, column=j).value.strip()
+    global shift_daily
+    i = 45
+    while i < 100 and sheet.cell(row=i, column=1).value not in ('מגבלות קבלות', 'הגדרת דוחות'):
+        i += 1
+    if i == 100 or sheet.cell(row=i, column=1).value == 'הגדרת דוחות':
+        TestData.error_exit("Couldnt find receives limits", ERRORS_MESSAGES)
+        return
+    if sheet.cell(row=i, column=1).value != 'מגבלות קבלות':
+        TestData.error_exit("Couldnt find recives limits", ERRORS_MESSAGES)
+        return
 
-         if not isinstance(limit_name, str):
-            print("Error!!")
-            print("limit_name is not string")
-            print("ReadData")
-            sys.exit()
+    i += 2  
+    j = 1
+    while True:
+        if i > 84 or sheet.cell(row=i, column=1).value == 'הגדרת דוחות':
+            return
+        limit_name = sheet.cell(row=i, column=j).value
+        if limit_name:
+            if isinstance(limit_name, str):
+                limit_name = limit_name.strip()
 
-         shift_for_limit=sheet.cell(row=i, column=j+1).value
+            shift_for_limit = TestData.test_not_none_and_strip(sheet.cell(row=i, column=j+1).value, "shift_for_limit", ERRORS_MESSAGES)
+            shift_daily = None
+            if ',' in shift_for_limit or '/' in shift_for_limit:
+                shift_for_limit = utils.split_shifts_for_limits(shift_for_limit)
+                shift_daily = TestData.test_shift_for_receives_limits(shift_for_limit, shifts, ERRORS_MESSAGES)
+            elif shift_for_limit in ("כולם", "כל המשמרות"):
+                shift_for_limit = [item["name"] for item in shifts if "name" in item]
+                shift_daily = 'S'
+            else:
+                shift_daily = TestData.test_shift_for_receives_limits(shift_for_limit, shifts, ERRORS_MESSAGES)
 
-         if shift_for_limit == None or shift_for_limit =='':
-             print("Error, coludent find shifts for limits") 
-             print("i="+str(i)+" , j = "+ str(j))
-             print("ReadData")
-             sys.exit()
+            if shift_daily is None:
+                TestData.error_exit("Coludent find shift_daily for limits - receives_limits", ERRORS_MESSAGES)
 
-         shift_for_limit=shift_for_limit.strip()
-         
-         shift_daily=None # To cancel the previous setting from requests limits
+            scala = sheet.cell(row=i, column=j+2).value
+            if scala and isinstance(scala, str) and '-' in scala:
+                min_val, max_val = map(int, scala.split('-'))
+            else:
+                TestData.error_exit("Scala is not defined - receives_limits", ERRORS_MESSAGES)
+                min_val, max_val = None, None
 
-         if ',' in shift_for_limit or '/'in shift_for_limit:
-          shift_for_limit = split_shifts_for_limits(shift_for_limit)  
-          test_shift_for_receives_limits(shift_for_limit)
-         elif shift_for_limit == "כולם" or shift_for_limit == "כל המשמרות" :
-             shift_for_limit = [item["name"] for item in shifts if "name" in item]
-             shift_daily='S'
-         else: #Only one shift 
-            for t in range(len(shifts)):
-                temp_shifts=shifts[t]
-                name_of_shift= temp_shifts["name"]
-                if shift_for_limit == name_of_shift:
-                    shift_for_limit=[name_of_shift]
-                    shift_daily = 'S'
-                    break
+            default = sheet.cell(row=i, column=j+3).value
+            if default is None or default == ' ' or not isinstance(default, int):
+                TestData.error_exit("default  - requests_limits", ERRORS_MESSAGES)
 
-         if shift_daily == None:
-             print("Error, coludent find shifts for limits") 
-             print("ReadData")
-             sys.exit()
-         
+            is_global = sheet.cell(row=i, column=j+4).value
+            if is_global is None:
+                is_global = False
+            elif "כן" in str(is_global):
+                shift_daily = 'D'
+                is_global = True
 
-         scala=sheet.cell(row=i, column=j+2).value
-         if scala == None or scala == ' ' or isinstance(scala, int) or  '-' not in scala:
-            print("Error!!")
-            print("scala is not defined - requests_limits")
-            print("ReadData")
-            sys.exit()            
-
-         else: 
-            split_scala= scala.split('-')
-            min=int(split_scala[0])
-            max=int(split_scala[1])
-
-
-         default=sheet.cell(row=i, column=j+3).value
-         if  default == None or default == ' ' or not isinstance(default, int):
-            print("Error!!")
-            print("default  - requests_limits")
-            print("ReadData")
-            sys.exit() 
-
-
-
-         is_global =sheet.cell(row=i, column=j+4).value
-         if is_global == None:
-             is_global=False
-         elif is_global == "כן" or "כן" in is_global:
-             shift_daily='D'
-             is_global=True         
-         
-         receives_limits.append(
-         {
-            "name": limit_name,
-            "shifts": shift_for_limit,
-            "type":'Rec',
-            "shift_daily":shift_daily,
-            "min":min,
-            "max":max,
-            "default":default,
-            "is_global":is_global
-         }) 
-
-         j=1 
-         i+=1
-
-        elif i > 84  or  'הגדרת דוחות' == sheet.cell(row=i, column=1).value:
-            flag=False
-            return 
+            receives_limits.append({
+                "name": limit_name,
+                "shifts": shift_for_limit,
+                "type": 'Rec',
+                "shift_daily": shift_daily,
+                "min": min_val,
+                "max": max_val,
+                "default": default,
+                "is_global": is_global
+            })
+            i += 1
         else:
-            i+=1
-      
- else:
-        print("Error!!")
-        print("Couldnt find receives limits")
-        sys.exit()
-
-def get_employee_configurations_fields():
- i=100
- while sheet.cell(row=i, column=1).value != 'שדות נוספים בכרטיס העובד' and sheet.cell(row=i, column=1).value !='הרשאות':
-        i+=1
- if sheet.cell(row=i, column=1).value =='הרשאות':
-     print("Error!")
-     print("Couldnt find employee configurations")
-     print("ReadData")
-     sys.exit()
-
- if sheet.cell(row=i, column=1).value =='שדות נוספים בכרטיס העובד':      
-    i+=2
-    j=1
-    flag = True
-    while flag:
-        if sheet.cell(row=i, column=j).value != None and sheet.cell(row=i, column=j).value !=''and 'הרשאות' != sheet.cell(row=i, column=j).value:
-         configuration_name = sheet.cell(row=i, column=j).value 
-         document=False
-         if configuration_name == "מספר עובד לשכר":
-            document=True
-         excel = sheet.cell(row=i, column=j+1).value
-         if excel== "כן":
-            excel=True
-         else:
-            excel=False
-         report =sheet.cell(row=i, column=j+2).value
-         if report== "כן":
-            report=True
-         else:
-            report=False
-         if report == False and excel == False:
-            j=1 
-            i+=1
-            continue
-
-         configuration_name=configuration_name.strip()
-
-         if configuration_name not in general_employee_configuration_list:
-            print("Error")
-            print("Cant find the configurationname ")
-            sys.exit()  
-
-         employee_configurations.append(
-            {
-                "name":configuration_name,
-                "excel": excel,
-                "report":report,
-                "document":document
-            }
-         )
-         j=1 
-         i+=1
-        elif sheet.cell(row=i, column=j).value == None or  'הרשאות' == sheet.cell(row=i, column=1).value or sheet.cell(row=i, column=j).value == '':
-            flag=False
-            return 
+            i += 1
+#This function is for yearly or summer and winter Shabat
+def get_shabat_details(i, j, shabat_value, ERRORS_MESSAGES):
+    t = j
+    while sheet.cell(row=i, column=t).value != "יום התחלה" and t < 20:
+        t += 1
+    if t == 20:
+        TestData.error_exit(f"Couldn't find start day of Shabat ({shabat_value})", ERRORS_MESSAGES)
+        return None
+    t += 1
+    if shabat_value == 'שנתי':
+        return {
+            "name": "שבת",
+            "start_day": utils.convert_days_for_shabat(sheet.cell(row=i, column=t).value,full_name_days_of_week),
+            "start_time": sheet.cell(row=i+1, column=t).value,
+            "end_day": utils.convert_days_for_shabat(sheet.cell(row=i+2, column=t).value,full_name_days_of_week),
+            "end_time": sheet.cell(row=i+3, column=t).value,
+            "period": 'Y',
+            "religions": [1],
+            "special_type": "AS",
+            "type": "R"
+        }
+    elif shabat_value in ('חורף/קיץ', "חורף / קיץ"):
+        shabat_list = []
+        for period in ['W', 'S']:
+            t += 1
+            shabat_list.append({
+                "name": "שבת",
+                "start_day": utils.convert_days_for_shabat(sheet.cell(row=i, column=t).value),
+                "start_time": sheet.cell(row=i+1, column=t).value,
+                "end_day": utils.convert_days_for_shabat(sheet.cell(row=i+2, column=t).value),
+                "end_time": sheet.cell(row=i+3, column=t).value,
+                "period": period,
+                "religions": [1],
+                "special_type": "AS",
+                "type": "R"
+            })
+        return shabat_list
+    else:
+        return None
 
 def get_holidays():
- global shabat
- global holidays
- global automatic_holidays_special_cost
- global holidays_area
- i=60
- j=1
- while sheet.cell(row=i, column=j).value != '''פיצ'רים נוספים'''and sheet.cell(row=i, column=j).value !='הגדרת חגים וימי מנוחה' and i<150:
-  i+=1
+    global shabat, holidays, automatic_holidays_special_cost, holidays_area
+    i, j = 60, 1
+    while sheet.cell(row=i, column=j).value not in ("'''פיצ'רים נוספים'''", 'הגדרת חגים וימי מנוחה') and i < 150:
+        i += 1
       
- if sheet.cell(row=i, column=j).value =='הגדרת חגים וימי מנוחה':
-      i+=1
-      j+=1
-      shabat=sheet.cell(row=i, column=j).value
-      if shabat == 'שנתי':
-            t=j 
-            while sheet.cell(row=i, column=t).value != "יום התחלה" and t<20:
-                t+=1
-            
-            if t==20:
-                return "Error!! couldent find start day of Shabat (שנתית) "
-            t+=1
-            shabat_start_day=convert_days_for_shabat(sheet.cell(row=i, column=t).value)
-            shabat_start_hour=sheet.cell(row=i+1, column=t).value
-            shabat_end_day=convert_days_for_shabat(sheet.cell(row=i+2, column=t).value)
-            shabat_end_hour=sheet.cell(row=i+3, column=t).value  
-            shabat= {  
-                "name":"שבת",
-                "start_day":shabat_start_day,
-                "start_time":shabat_start_hour,
-                "end_day": shabat_end_day,
-                "end_time": shabat_end_hour,
-                "period":'Y',
-                "religions":[1],
-                "special_type":"AS",
-                "type":"R"
-            }     
-      if shabat == 'חורף/קיץ' or shabat == "חורף / קיץ":
-            shabat=[]
-            t=j 
-            while sheet.cell(row=i, column=t).value != "יום התחלה" and t<20:
-                t+=1
-            
-            if t==20:
-                return "Error!! couldent find start day of Shabat (חורף/קיץ) "
-            t+=1
-            for x in range(2):
-                t+=1
-                if x == 0:
-                    period='W'
-                else:
-                    period='S'
-                shabat_start_day=convert_days_for_shabat(sheet.cell(row=i, column=t).value)
-                shabat_start_hour=sheet.cell(row=i+1, column=t).value
-                shabat_end_day=convert_days_for_shabat(sheet.cell(row=i+2, column=t).value)
-                shabat_end_hour=sheet.cell(row=i+3, column=t).value  
-                shabat.append(
-                {  
-                    "name":"שבת",
-                    "start_day":shabat_start_day,
-                    "start_time":shabat_start_hour,
-                    "end_day": shabat_end_day,
-                    "end_time": shabat_end_hour,
-                    "period":period,
-                    "religions":[1],
-                    "special_type":"AS",
-                    "type":"R"
-                }  )         
-      holidays=sheet.cell(row=i+1, column=j).value
-      automatic_holidays_special_cost=sheet.cell(row=i+2, column=j).value
-      holidays_area=sheet.cell(row=i+3, column=j).value
-      if holidays =="כן" or shabat == "אוטומטי":
-          if holidays_area == None :
-              print("Error! There is automatic holiday or Shabat and there is no area code")
-              print("ReadData")
-              sys.exit()
-      return
- else:
-     print("Error, no holidays!!")
-     print("ReadData")
-     sys.exit() 
+    if sheet.cell(row=i, column=j).value != 'הגדרת חגים וימי מנוחה':
+        TestData.error_exit("Error, no holidays!!", ERRORS_MESSAGES)
+        return
+
+    i, j = i + 1, j + 1 
+    shabat_value = sheet.cell(row=i, column=j).value
+    if shabat_value in ('שנתי', 'חורף/קיץ', "חורף / קיץ"):
+        shabat = get_shabat_details(i, j, shabat_value, ERRORS_MESSAGES)
+    else: #Automatic or without shabat 
+         shabat=shabat_value
+    holidays = sheet.cell(row=i+1, column=j).value
+    automatic_holidays_special_cost = sheet.cell(row=i+2, column=j).value
+    holidays_area = sheet.cell(row=i+3, column=j).value
+    if holidays == "כן" or shabat_value == "אוטומטי":
+        if holidays_area is None:
+            TestData.error_exit("Error! There is automatic holiday or Shabat and there is no area code", ERRORS_MESSAGES)
+    return
 
 def get_clock():
- global clock
- global clock_number
- global permissions_for_web_clock
- i=108
- j=1
- while sheet.cell(row=i, column=j).value != 'סוג שעון' and sheet.cell(row=i, column=1).value !='פושים' and i<200:
-        i+=1
- if sheet.cell(row=i, column=j).value =='פושים':
-     print("Error, couldent find clock")
-     print("ReadData")
-     sys.exit()
-
- if sheet.cell(row=i, column=j).value == 'סוג שעון':
-     clock=sheet.cell(row=i, column=j+1).value
-     if clock in general_clock_list:
-      if 'אפליקציה' in clock:
-            permissions_for_web_clock= sheet.cell(row=i, column=j+2).value
-            if permissions_for_web_clock == None or permissions_for_web_clock==' ' :
-             permissions_for_web_clock=perrmisions_list # Case when the web clock is not spesific for groups
-            elif ',' in permissions_for_web_clock:
-             permissions_for_web_clock = permissions_for_web_clock.split(',')
-             test_web_clock(permissions_for_web_clock)
-            elif ',' not in permissions_for_web_clock :
-             permissions_for_web_clock=[]
-             permissions_for_web_clock.append(sheet.cell(row=i, column=j+2).value) 
-
-      clock_number=sheet.cell(row=i+1, column=j+1).value
-     else:
-      print("Error, couldent find clock")
-      print("ReadData")
-      sys.exit()   
-     
-
- else:
-     print("Error, couldent find clock")
-     print("ReadData")
-     sys.exit()
+    global clock, clock_number, permissions_for_web_clock
+    i, j = 108, 1
+    while sheet.cell(row=i, column=j).value not in ['סוג שעון', 'פושים'] and i < 200:
+        i += 1
+    if sheet.cell(row=i, column=j).value == 'פושים':
+        TestData.error_exit("Error, couldent find clock",ERRORS_MESSAGES)
+        return
+    
+    if sheet.cell(row=i, column=j).value == 'סוג שעון':
+        clock = sheet.cell(row=i, column=j+1).value
+        if clock in general_clock_list:
+            if 'אפליקציה' in clock:
+                permissions_for_web_clock = sheet.cell(row=i, column=j+2).value
+                if not permissions_for_web_clock or permissions_for_web_clock == ' ':
+                    permissions_for_web_clock = perrmisions_list
+                elif ',' in permissions_for_web_clock:
+                    permissions_for_web_clock = permissions_for_web_clock.split(',')
+                    TestData.test_web_clock(permissions_for_web_clock, perrmisions_list)
+                else:
+                    permissions_for_web_clock = [sheet.cell(row=i, column=j+2).value]
+            clock_number = sheet.cell(row=i+1, column=j+1).value
+        else:
+            TestData.error_exit("Error, couldent find clock",ERRORS_MESSAGES)
+    else:
+        TestData.error_exit("Error, couldent find clock",ERRORS_MESSAGES)
 
 def get_features():
- global features
- global vacation_days
- vacation_days=None
- i=70
- j=1
- while sheet.cell(row=i, column=j).value != '''פיצ'רים נוספים'''and sheet.cell(row=i, column=1).value !='חוקי עבודה' and i < 180:
-        i+=1
+    global features, vacation_days
+    vacation_days = None
+    i, j = 70, 1
 
- if sheet.cell(row=i, column=j).value == '''פיצ'רים נוספים''':
-     i+=1
-     while sheet.cell(row=i, column=1).value !='חוקי עבודה' and i < 180:
-        if sheet.cell(row=i, column=2).value == 'כן':
-            if sheet.cell(row=i, column=1).value == 'חופשות':
-                if sheet.cell(row=i, column=3).value != None:
-                    vacation_days=14  
-            if sheet.cell(row=i, column=1).value == 'מסמכים':
-                if any( d.get('name') == 'תאריך תחילת עבודה' for d in employee_configurations):
-                    if any( d.get('name') == 'תעודת זהות' for d in employee_configurations):
-                        print()
-                    else:
-                        print("Warning!!")
-                        print("There is no employee_configurations תעודת זהות'!!")
-                        print("ReadData")
+    while sheet.cell(row=i, column=j).value not in ("פיצ'רים נוספים", "חוקי עבודה") and i < 180:
+        i += 1
+
+    if sheet.cell(row=i, column=j).value == "פיצ'רים נוספים":
+        i += 1
+        while sheet.cell(row=i, column=1).value != 'חוקי עבודה' and i < 180:
+            if sheet.cell(row=i, column=2).value == 'כן':
+                feature = sheet.cell(row=i, column=1).value
+                if feature == 'חופשות' and sheet.cell(row=i, column=3).value is not None:
+                    vacation_days = 14
+                elif feature == 'מסמכים':
+                    names = {d.get('name') for d in employee_configurations}
+                    if 'תאריך תחילת עבודה' not in names:
+                        print("Warning!!\n There is no employee_configurations of תאריך תחילת עבודה \nReadData")
+                    elif 'תעודת זהות' not in names:
+                        print("Warning!!\n There is no employee_configurations תעודת זהות' \nReadData")
+                elif feature in general_features_list:
+                    features.append(feature)
                 else:
-                    print("Warning!!")
-                    print("There is no employee_configurations of תאריך תחילת עבודה !!")
-                    print("ReadData")
-            if sheet.cell(row=i, column=1).value in general_features_list:
-                features.append(sheet.cell(row=i, column=1).value)
-            else:
-             print("Error, couldent find feature")
-             print("ReadData")
-             sys.exit() 
-
-            i+=1
-        else:
-            i+=1
- else:
-     print("Error, couldent find features")
-     print("ReadData")
-     sys.exit()
-
-def find_groups_for_cutting_hours(y,x):
-    while sheet.cell(row=y, column=x).value not in general_perrmisions_list and y > 120:
-        y-=1
-    if sheet.cell(row=y, column=x).value in general_perrmisions_list:
-           return  sheet.cell(row=y, column=x).value
+                    TestData.error_exit("Couldent find feature", ERRORS_MESSAGES)
+            i += 1
     else:
-          return "Error!! "
+        TestData.error_exit("Couldent find features", ERRORS_MESSAGES)
 
-def return_perrmisions_id (group):
-      if group=='Headquarters':
-            return 10
-      elif group=='Owners':
-            return 7
-      elif group=='Managers':
-            return 2
-      elif group=='Junior-Managers':
-            return 9
-      elif group=='Senior Sub-Managers':
-            return 8
-      elif group=='Sub-Managers':
-            return 3
-      elif group=='Senior Employees':
-            return 11  
-      elif group=='Employees':
-            return 4
-      elif group=='Junior Employees':
-            return 5
-      elif group=='Automation':
-            return 6
+def get_employee_configurations_fields():
+    i = 100
+    while sheet.cell(row=i, column=1).value not in ['שדות נוספים בכרטיס העובד', 'הרשאות']:
+        i += 1
+    if sheet.cell(row=i, column=1).value == 'הרשאות':
+        TestData.error_exit("Couldnt find employee configurations",ERRORS_MESSAGES)
+
+    if sheet.cell(row=i, column=1).value == 'שדות נוספים בכרטיס העובד':
+        i += 2
+        while True:
+            if sheet.cell(row=i, column=1).value in [None, 'הרשאות', '']:
+                return
+            configuration_name = sheet.cell(row=i, column=1).value
+            if configuration_name:
+                configuration_name = configuration_name.strip()
+                document = configuration_name == "מספר עובד לשכר"
+                excel = sheet.cell(row=i, column=2).value == "כן"
+                report = sheet.cell(row=i, column=3).value == "כן"
+                if report or excel:
+                    if configuration_name not in general_employee_configuration_list:
+                        TestData.error_exit("Error\nCant find the configuration name",ERRORS_MESSAGES)
+  
+                    employee_configurations.append({
+                        "name": configuration_name,
+                        "excel": excel,
+                        "report": report,
+                        "document": document
+                    })
+            i += 1
 
 def get_cutting_hours():
- global cutting_hours
- cutting_hours=[]
- i=150
- j=1
- while (sheet.cell(row=i, column=j).value is None or 
-       ('חיתוך שעות' not in str(sheet.cell(row=i, column=j).value))) and i < 300:
-        
-        i+=1
- if sheet.cell(row=i, column=j).value =='הערות':
-     print("Error, didnt find cutting houers!!")
-     print("ReadData")
-     sys.exit()
- if 'חיתוך שעות' in sheet.cell(row=i, column=j).value:
-     for counter in range (3):
-        j=1
-        attribute=[57,58,59,60]
-        while j<10 :
-         if sheet.cell(row=i, column=j+1).value == -1:
-             j+=1
-             continue
-         value=sheet.cell(row=i, column=j+1).value 
-         group= find_groups_for_cutting_hours(i,j+1)
-         group= return_perrmisions_id(group)
-         cutting_hours.append(
-            {
-                "group_id":group,
-                "attribute":attribute[counter],
-                "value": value
-            }
-         )
-         j+=1
-        
-        if j == 10:
-            i+=1
- else:
-     print("Error, couldent find cutting hours in the table")
-     print("ReadData")
-     sys.exit()
+    global cutting_hours
+    cutting_hours = []
+    i, j = 150, 1
+    while (sheet.cell(row=i, column=j).value is None or 'חיתוך שעות' not in str(sheet.cell(row=i, column=j).value)) and i < 300:
+        i += 1
+    if sheet.cell(row=i, column=j).value == 'הערות':
+        TestData.error_exit("Didnt find cutting houers",ERRORS_MESSAGES)
+    if 'חיתוך שעות' in sheet.cell(row=i, column=j).value:
+        attribute = [57, 58, 59, 60]
+        for counter in range(3):
+            j = 1
+            while j < 10:
+                if sheet.cell(row=i, column=j+1).value == -1:
+                    j += 1
+                    continue
+                value = sheet.cell(row=i, column=j+1).value
+                #  group get the id number of the permission group 
+                group = utils.return_perrmisions_id_ReadData(utils.find_groups_for_cutting_hours(i, j+1,sheet,general_perrmisions_list,ERRORS_MESSAGES))
+                if any( d.get("group") == utils.retrun_permission_id_to_group(group) for d in perrmisions_list): #Cheack if its relevant to the groups allready added
+                    cutting_hours.append({
+                        "group_id": group,
+                        "attribute": attribute[counter],
+                        "value": value
+                    })
+                    j += 1
+                else:
+                    TestData.error_exit("Error, mismatch between cutting hours and groups in perrmisions_list ",ERRORS_MESSAGES)
+                    return
+            if j == 10:
+                i += 1
+    else:
+         TestData.error_exit("Error, couldent find cutting hours in the table",ERRORS_MESSAGES)
 
 def read_all_data(sheet_from_API):
-    global sheet
-    global perrmisions_list
-    global religions_list
-    global locations
-    global  owner_details
-    global roles
-    global shifts
-    global requests_limits
-    global receives_limits
-    global employee_configurations
-    global features
-
+    global sheet, perrmisions_list, religions_list, locations, owner_details, roles, shifts, requests_limits, receives_limits
+    global employee_configurations, features
 
     sheet=sheet_from_API
-    perrmisions_list=[]
-    religions_list=[]
-    locations=[]
-    owner_details=[]
-    roles=[]
-    shifts=[]
-    requests_limits=[]
-    receives_limits=[]
-    employee_configurations=[]
-    features=[]
-#################################################
-    test_the_sheet()
+    perrmisions_list, religions_list, locations, owner_details, roles = [], [], [], [], []  
+    shifts, requests_limits, receives_limits, employee_configurations, features = [], [], [], [], []  
+
+    TestData.test_the_sheet(sheet)
     get_application_and_company()
     get_owners()
     get_roles()
@@ -1082,9 +567,11 @@ def read_all_data(sheet_from_API):
     get_receives_limits()
     get_holidays()
     get_features()
-    test_features()
+    TestData.test_features(features,perrmisions_list,ERRORS_MESSAGES)
     get_locations()
     get_clock()
     get_employee_configurations_fields()
     get_cutting_hours()
-    
+    if len(ERRORS_MESSAGES) != 0:
+        print(ERRORS_MESSAGES)
+        sys.exit()
