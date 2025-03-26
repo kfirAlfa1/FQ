@@ -6,6 +6,7 @@ import json
 import sys
 ################ ReadData ##########################
 ####################################################
+
 def return_perrmisions_id_ReadData (group):
       if group=='Headquarters':
             return 10
@@ -65,6 +66,8 @@ def convert_days_to_range_for_limist(days_for_requests_limits,days_of_week,ERROR
    days= []
    temp1=days_for_requests_limits[0]
    temp2=days_for_requests_limits[1]
+   temp1 = temp1[-1] 
+   temp2 = temp2[0]
    try:
     index = days_of_week.index(temp1)
     days.append(index+1)
@@ -73,9 +76,7 @@ def convert_days_to_range_for_limist(days_for_requests_limits,days_of_week,ERROR
     days=list(range(days[0], days[-1] + 1))
     return days
    except Exception as e: 
-    TestData.error_exit("Error with converting days to range for limits",ERRORS_MESSAGES)
-
-
+    TestData.error_exit("Error with converting days to range for limits - utils.py",ERRORS_MESSAGES)
 
 ################ API ##############################
 #################################################### 
@@ -357,15 +358,15 @@ def convert_shift_name_to_id_for_receives_limits(receives_limits, shift_name, sh
 ################ Features ##############################
 #######################################################
 
-def organize_groups_Features(groups, temp_high_groups, temp_low_groups, high_groups_id, low_groups_id):
-    global automation_group # Declare it as global so it can be used outside the function
-    automation_group_Features = False  # Reset before processing
+# def organize_groups_Features(groups, temp_high_groups, temp_low_groups, high_groups_id, low_groups_id):
+#     global automation_group # Declare it as global so it can be used outside the function
+#     automation_group_Features = False  # Reset before processing
 
-    for dictionary in groups:
-        if dictionary.get("original_name") in temp_high_groups and dictionary.get("id") not in high_groups_id:
-            high_groups_id.append(dictionary.get("id"))
-        elif dictionary.get("original_name") in temp_low_groups and dictionary.get("id") not in low_groups_id:
-            low_groups_id.append(dictionary.get("id"))
-        elif dictionary.get("original_name") == 'Automation':
-            automation_group_Features = True  # Set it if condition matches
+#     for dictionary in groups:
+#         if dictionary.get("original_name") in temp_high_groups and dictionary.get("id") not in high_groups_id:
+#             high_groups_id.append(dictionary.get("id"))
+#         elif dictionary.get("original_name") in temp_low_groups and dictionary.get("id") not in low_groups_id:
+#             low_groups_id.append(dictionary.get("id"))
+#         elif dictionary.get("original_name") == 'Automation':
+#             automation_group_Features = True  # Set it if condition matches
 
