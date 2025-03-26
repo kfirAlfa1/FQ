@@ -34,8 +34,19 @@ def load_and_convert_excel_to_values_only():
 
     sheet1 = new_wb.worksheets[0]
     sheet2 = new_wb.worksheets[1]
+    #root.destroy()
+
+def execute_system():
+    choice = system_choice.get()
+    if choice == 1:
+        create_one_system()
+    elif choice == 2:
+        create_two_systems_with_one_company()
+    elif choice == 3:
+        create_attendance_system()
     root.destroy()
 
+###########################################
 def create_system(two_systems_boolean):
  API.get_token()
  global headers
@@ -101,8 +112,8 @@ def create_system(two_systems_boolean):
       API.create_employee(i,headers,ReadData.owner_details,API.app_id)
 
  print("\n\n System created successfully\n\n")
-##############################################
-def attendance_system():
+
+def create_attendance_system():
  ReadData.read_all_data(sheet1)
  API.get_token()
  global headers
@@ -149,29 +160,39 @@ def attendance_system():
 
  print("\n\n System created successfully\n\n")
 
-def one_system():
+def create_one_system():
  ReadData.read_all_data(sheet1)
  create_system(False)
 
-def two_systems_with_one_company():
+def create_two_systems_with_one_company():
   ReadData.read_all_data(sheet1)
   create_system(False) 
   ReadData.read_all_data(sheet2)  
   create_system(True) 
 
-################################################################################
-################################################################################
+##############################################
+##############  GUI ###########################
+##############################################
 root = tk.Tk()
 root.title("FQ system")
-root.geometry("400x250")
+root.geometry("400x300")
 load_button = tk.Button(root, text="Load Excel File", command=load_and_convert_excel_to_values_only)
-load_button.pack(pady=50)
+load_button.pack(pady=60)
+
+system_choice = tk.IntVar()
+system_choice.set(1) 
+
+tk.Radiobutton(root, text="Create one system", variable=system_choice, value=1).pack(anchor="w", padx=20)
+tk.Radiobutton(root, text="Create two systems with one company", variable=system_choice, value=2).pack(anchor="w", padx=20)
+tk.Radiobutton(root, text="Create attendance system", variable=system_choice, value=3).pack(anchor="w", padx=20)
+
+execute_button = tk.Button(root, text="Execute", command=execute_system, width=20, height=2, font=("Helvetica", 14))
+execute_button.pack(pady=20)
+
 root.mainloop()
 
-one_system()
-#two_systems_with_one_company()
-#attendance_system()
-
+###################################
+###################################
 
 #For Motti
 # Support gruop in  organize_groups() 
