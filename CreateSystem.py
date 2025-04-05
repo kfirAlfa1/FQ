@@ -6,6 +6,12 @@ import tkinter as tk
 from tkinter import filedialog
 import Features
 import utils
+import TokenAndCats
+
+
+
+token_and_cats = TokenAndCats.TokenAndCats()
+
 ############################################# 
 def load_and_convert_excel_to_values_only():
     global sheet1 
@@ -48,115 +54,85 @@ def execute_system():
 
 ###########################################
 def create_system(two_systems_boolean):
- API.get_token()
- global headers
- headers = {"Authorization": f"Token {API.token}"}
  if two_systems_boolean == False: 
-     API.create_company(headers)
- API.create_app(headers)
- Cats = Features.get_cats(635)
- headers = {"Authorization": f"Token {API.token}", "Cats": Cats}
-
- for i in range(len(ReadData.roles)):
-  API.create_role(i,ReadData.roles,API.app_id,headers)
- if len(API.LIST_OF_ROLES) == len(ReadData.roles):
-      print("\n All roles were created successfully \n")
- 
- counter_of_shifts=0
- for i in range(len(ReadData.shifts)):
-  counter_of_shifts += API.create_shifts(i,ReadData.shifts,API.app_id,headers)
-  if counter_of_shifts == len(ReadData.shifts):
-       print("\n All shifts were created successfully \n")
-
- counter_of_requests_limits=0     
- for i in range(len(ReadData.requests_limits)):
-  counter_of_requests_limits+=API.create_request_limits(i,API.app_id,headers)
-  if counter_of_requests_limits == len(ReadData.requests_limits):
-       print("\n All requests limits were created successfully \n") 
-
- counter_of_recive_limits=0 
- for i in range(len(ReadData.receives_limits)):
-  API.create_recive_limits(i,API.app_id,headers)
-  if counter_of_recive_limits == len(ReadData.receives_limits):
-       print("\n All recive limits were created successfully \n") 
-
- API.create_clock(API.app_id,headers)
-
- for i in range(len(ReadData.features)):
-  API.create_features(i,API.app_id,headers)
-
+     API.create_company()
+     print("Company created")
+ API.create_app()
+ print("App created")
+ token_and_cats.get_cats(API.app_id)
+ API.create_roles(ReadData.roles,API.app_id)
+ print("Roles created")
+ API.create_shifts(ReadData.shifts,API.app_id)
+ print("Shifts created")
+ API.create_requests_limits(ReadData.requests_limits,API.app_id)
+ print("requests_limits created")
+ API.create_recives_limits(ReadData.receives_limits,API.app_id)
+ print("recives_limits created")
+ API.create_clock(API.app_id)
+ print("Clock created")
+ API.create_features(ReadData.features,API.app_id)
  if len(ReadData.cutting_hours) != 0: #Specific for cutting hours
    Features.create_cutting_hours_feature(API.app_id,ReadData.cutting_hours) 
-   API.create_report_coulmn(API.app_id,["3"],'exit_cut',None,headers)
-   API.create_report_coulmn(API.app_id,["3"],'entry_cut',None,headers)
-
+ print("Features created")
  if ReadData.shabat is not None and len(ReadData.shabat) != 0:
-      API.create_shabat(API.app_id,headers)
+      API.create_shabat(API.app_id)
 
  if ReadData.holidays == "כן":
       ReadData.holidays_area = utils.choose_holiday_area_code(ReadData.holidays_area)
-      API.create_automatic_holiday(API.app_id,headers)
+      API.create_automatic_holiday(API.app_id)
 
  if ReadData.automatic_holidays_special_cost == "כן":
-      API.create_report_attribute(API.app_id,headers)
+      API.create_report_attribute(API.app_id)
       Features.create_special_holiday(API.app_id)
       if ReadData.language != "he":
-          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"Speciel 200%",headers)
+          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"Speciel 200%")
       else:          
-          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"מיוחד 200%",headers)
+          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
 
- for i in range(len(ReadData.employee_configurations)):
-     API.create_employee_configuration(i,API.app_id,ReadData.employee_configurations[i],headers)
+ API.create_employee_configurations(ReadData.employee_configurations,API.app_id)
+ print("Employee configurations created")
 
- for i in range(len(ReadData.owner_details)):
-      API.create_employee(i,headers,ReadData.owner_details,API.app_id)
+ API.create_employees(ReadData.owner_details,API.app_id)
+ print("Owners created")
 
  print("\n\n System created successfully\n\n")
 
 def create_attendance_system():
  ReadData.read_all_data(sheet1)
- API.get_token()
- global headers
- headers = {"Authorization": f"Token {API.token}"}
- API.create_company(headers)
- API.create_attendance_app(headers)
- Cats = Features.get_cats(API.app_id)
- headers = {"Authorization": f"Token {API.token}", "Cats": Cats}
-
- API.create_role(0,ReadData.roles,API.app_id,headers)
-
+ API.create_company()
+ API.create_attendance_app()
+ headers=TokenAndCats.TokenAndCats().get_cats(API.app_id)
+ API.create_roles(ReadData.roles,API.app_id)
  unplanned_shift_flag=True
- API.create_unplanned_shift(API.app_id,unplanned_shift_flag,headers)
-
- API.create_clock(API.app_id,headers)
-
+ API.create_unplanned_shift(API.app_id,unplanned_shift_flag)
+ API.create_clock(API.app_id)
  if ReadData.shabat is not None and len(ReadData.shabat) != 0:
-      API.create_shabat(API.app_id,headers)
+      API.create_shabat(API.app_id)
 
  if ReadData.automatic_holidays_special_cost == "כן":
-      API.create_report_attribute(API.app_id,headers)#Spacial holiday regular hours rate
+      API.create_report_attribute(API.app_id)#Spacial holiday regular hours rate
       Features.create_special_holiday(API.app_id)
       if ReadData.language != "he":
-          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"Speciel 200%",headers)
+          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"Speciel 200%")
       else:          
-          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"מיוחד 200%",headers)
+          API.create_report_coulmn(API.app_id,["1","2"],'special_holiday_100',"מיוחד 200%")
 
  if ReadData.holidays == "כן":
       ReadData.holidays_area = utils.choose_holiday_area_code(ReadData.holidays_area)
-      API.create_automatic_holiday(API.app_id,headers)
+      API.create_automatic_holiday(API.app_id)
  
  for i in range(len(ReadData.features)):
-  API.create_features(i,API.app_id,headers)
+  API.create_features(i,API.app_id)
  if len(ReadData.cutting_hours) != 0:
    Features.create_cutting_hours_feature(API.app_id,ReadData.cutting_hours)
    
  Features.delete_auto_populate_rota(API.app_id)
 
  for i in range(len(ReadData.employee_configurations)):
-     API.create_employee_configuration(i,API.app_id,ReadData.employee_configurations[i],headers)
+     API.create_employee_configuration(i,API.app_id,ReadData.employee_configurations[i])
 
  for i in range(len(ReadData.owner_details)):
-      API.create_employee(i,headers,ReadData.owner_details,API.app_id)
+      API.create_employee(i,ReadData.owner_details,API.app_id)
 
  print("\n\n System created successfully\n\n")
 
