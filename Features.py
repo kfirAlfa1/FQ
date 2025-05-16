@@ -3,8 +3,6 @@ import json
 import sys
 import TokenAndCats 
 
-
-
 env_url= "https://k8-shift.tabit-dev.com/"
 
 create_application_group_feature_url=env_url+"api/application-group-feature/"
@@ -139,6 +137,7 @@ def create_clock_feature(app_id):
             if req.status_code != 201:
                 print("ERROR!! Clock feature FAILD for group id " +str(group_id) )
     CLOCK =True
+    
 
 def create_web_clock_attribute(app_id, permissions_for_web_clock):
     token_and_cats.get_token_and_headers()
