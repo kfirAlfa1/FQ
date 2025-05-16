@@ -1,6 +1,6 @@
 import sys
 from datetime import time
-############ Tests ###################
+############ Tests For ReadData ###################
 
 def error_exit(msg,ERRORS_MESSAGES):
     ERRORS_MESSAGES.append(msg + " \nReadData")
@@ -157,3 +157,13 @@ def test_in_list(variable, valid_list, name,ERRORS_MESSAGES):
 def test_type(variable, expected_type, name,ERRORS_MESSAGES):
   if not isinstance(variable, expected_type):
     error_exit(f"{name} is not in {expected_type.__name__} format",ERRORS_MESSAGES)
+
+
+############ Tests For API ###################
+
+def test_same_length(counter, list,list_name):
+  if counter != len(list):
+    print("Error! Not all " + list_name+ "created succesfuly")
+    sys.exit()
+  else:
+    print("All " + list_name+ " created succesfuly")
