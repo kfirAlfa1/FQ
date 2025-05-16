@@ -1,8 +1,6 @@
 import TestData
 import WorldTimeZones
 from deep_translator import GoogleTranslator
-import requests
-import json
 import sys
 ################ ReadData ##########################
 ####################################################
