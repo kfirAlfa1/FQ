@@ -67,6 +67,7 @@ def create_company():
  response=send_post_request(create_company_url,data,request_name="create_company",error_message="Error with create_company - API")
  if response != None:
     company_id=response.get("id")
+    print("Company created")
  else:
      print("Error!! ,create_company request failed")
      sys.exit()
@@ -115,6 +116,7 @@ def create_app():
  response=send_post_request(create_app_url,data,request_name="create_app",error_message="Error with create_app - API")
  if response != None:
     app_id=response.get("id")
+    print("Application created")
  else:
      print("Error!!, create_app request failed")
      sys.exit()
