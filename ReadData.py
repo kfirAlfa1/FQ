@@ -7,7 +7,7 @@ general_perrmisions_list =['Headquarters','Owners','Managers','Junior-Managers',
 general_religions_list =['Jewish','Christian','Muslim','Foreign']
 general_languages=['עברית','אנגלית','אנגלית (USA)','אנגלית (UK)','אנגלית (ISR)','אנגלית (Tabit US)']
 general_country_codes=['ישראל','ארה"ב','אנגליה','רוסיה']
-general_features_list=['לייבור קוסט - LC','עלויות',"פיצ'ר ג'ירפות - הגדרה מראש עם אצבע","פיצ'ר סינטות - תכנון הפסקות",'חופשות','החלפות','היעדרויות','נסיעות','מסמכים','טפסי 101',"פיצ'ר נונו מימי - סידור מפוצל",'משימות','חיתוך שעות']
+general_features_list=['לייבור קוסט - LC','עלויות',"פיצ'ר ג'ירפות - הגדרה מראש עם אצבע","פיצ'ר סינטות - תכנון הפסקות",'חופשות','החלפות','היעדרויות','נסיעות','מסמכים','טפסי 101',"פיצ'ר נונו מימי - סידור מפוצל",'משימות','חיתוך שעות','איוש עובדים מוגדרים מראש']
 general_clock_list= ['ביומטרי','אפליקציה (Web clock)','תוכנתי (Install clock)','טאביט','ללא שעון']
 general_employee_configuration_list = ['תעודת זהות','עיר','כתובת','מיקוד','תאריך תחילת עבודה','תאריך סיום עבודה','דת','מזהה שעון','מספר עובד לשכר','תפקיד ראשי']
 continuously_list=[0,1,2,3]
@@ -17,6 +17,8 @@ full_name_days_of_week=['ראשון','שני','שלישי','רביעי','חמי�
 
 VALIDATE_DATA=True
 ERRORS_MESSAGES=[]
+
+
 
 def get_groups():
     global default_perrmision
@@ -69,6 +71,11 @@ def get_religions():
             i += 1
     else:
      TestData.error_exit("Cant find religions!",ERRORS_MESSAGES)
+
+def get_company_name(sheet):
+    company_name=sheet.cell(row=12, column=2).value
+    company_name=TestData.test_not_none_and_strip(company_name, "company_name",ERRORS_MESSAGES)
+    return company_name
 
 def get_application_and_company():
     global app_name, display_name, company_name, language, time_zone, country_code, first_day_of_week, first_day_of_weekend
