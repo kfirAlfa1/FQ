@@ -6,7 +6,7 @@ import utils
 import sys
 import TokenAndCats
 
-env_url= "https://k8-shift.tabit-dev.com"
+env_url= ""
 
 days_of_the_week = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
 general_high_groups_permissions=["Headquarters","Owners","Managers"]
