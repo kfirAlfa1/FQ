@@ -1,11 +1,12 @@
 import requests
-env_url= "https://k8-shift.tabit-dev.com"
+
+env_url = ""
 
 
 class SingletonMeta(type):
-    token=None
-    Cats=None
-    Headers=None
+    token = None
+    Cats = None
+    Headers = None
 
     _instances = {}
 
@@ -21,50 +22,58 @@ class SingletonMeta(type):
 
 
 class TokenAndCats(metaclass=SingletonMeta):
- 
- def __init__(self):
-     self.token = None
-     self.headers = None
-     self.get_token_and_headers()
 
- def get_token_and_headers(self):
-      if self.token is not None and self.headers is not None:
-          return
-      tok_url = env_url+"/api/auth/token/"
-      tok_data = {"username": "", "password": "", "company": }
-      response = requests.post(tok_url, json=tok_data)
-      if response.status_code != 200:
+    def __init__(self):
+        self.token = None
+        self.headers = None
+        self.get_token_and_headers()
+
+    def get_token_and_headers(self):
+        if self.token is not None and self.headers is not None:
+            return
+
+        if not env_url:
+            print("API URL is not configured.")
+            return
+
+        tok_url = env_url + "/api/auth/token/"
+        tok_data = {"username": "", "password": "", "company": 0}
+
+        if not tok_data["username"] or not tok_data["password"]:
+            print("API credentials are not configured.")
+            return
+
+        response = requests.post(tok_url, json=tok_data)
+        if response.status_code != 200:
             print(f"get_token returned error: {response.status_code}")
             print(f"Response: {response.text}")
             return
-      else:
-          self.token= response.json().get("token")
-          self.headers = {"Authorization": f"Token {self.token}"}
-          return self.token
-          
- def get_headers(self):
+        else:
+            self.token = response.json().get("token")
+            self.headers = {"Authorization": f"Token {self.token}"}
+            return self.token
+
+    def get_headers(self):
         if not self.headers:
             self.get_token_and_headers()
         return self.headers
- 
- def get_cats(self,app_id):
-      cats_url = env_url+ "/api/auth/switch-application/"
-      if self.token is None:
+
+    def get_cats(self, app_id):
+        cats_url = env_url + "/api/auth/switch-application/"
+        if self.token is None:
             self.get_token_and_headers()
-      if  self.headers is None:
-           self.get_headers()
-      else:
-           if "Cats" in self.headers:
-                return        
-      self.headers={"Authorization": f"Token {self.token}"}
-      data ={
-          "application": app_id
-         }
-      response = requests.post(cats_url, json=data,headers=self.headers)
-      if response.status_code == 200:
-          self.headers={"Authorization": f"Token {self.token}", "Cats": response.json().get('cats')}
-          return self.headers
-      else:
-          print("ERROR!")
-          print(" response.status_code "+str(response.status_code))
-          print(" response.content "+str(response.content))
+        if self.headers is None:
+            self.get_headers()
+        else:
+            if "Cats" in self.headers:
+                return
+        self.headers = {"Authorization": f"Token {self.token}"}
+        data = {"application": app_id}
+        response = requests.post(cats_url, json=data, headers=self.headers)
+        if response.status_code == 200:
+            self.headers = {"Authorization": f"Token {self.token}", "Cats": response.json().get('cats')}
+            return self.headers
+        else:
+            print("ERROR!")
+            print(" response.status_code " + str(response.status_code))
+            print(" response.content " + str(response.content))
