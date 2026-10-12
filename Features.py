@@ -3,7 +3,7 @@ import json
 import sys
 import TokenAndCats 
 
-env_url= "https://k8-shift.tabit-dev.com/"
+env_url= ""
 
 create_application_group_feature_url=env_url+"api/application-group-feature/"
 create_application_group_attribute_url=env_url+"api/application-group-attribute/"
@@ -212,7 +212,7 @@ def create_automation_user(app_id):
       {
         "company":company_id,
         "username":"tabit_auto",
-        "password":"tabit"+str(company_id),
+        "password":"",
         "first_name" :'טאביט' ,
         "last_name":'אוטומציה',
         "email":"",
@@ -225,7 +225,7 @@ def create_automation_user(app_id):
             print("\n Automation user created \n\n")
             print("API: LC + Attendance")
             print("username : tabit_auto")
-            print("password : tabit"+ str(company_id))
+            print("password : "")
             print("company :"+ str(company_id))
             print("app id  :"+ str(app_id))
             print()
