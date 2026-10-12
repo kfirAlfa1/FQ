@@ -455,7 +455,7 @@ def create_automation_user(app_id):
       {
         "company":company_id,
         "username":"tabit_auto",
-        "password":"tabit"+str(company_id),
+        "password":"CHANGE_ME",
         "first_name" :'טאביט' ,
         "last_name":'אוטומציה',
         "email":"",
@@ -468,7 +468,6 @@ def create_automation_user(app_id):
             print("\n Automation user created \n\n")
             print("API: LC + Attendance")
             print("username : tabit_auto")
-            print("password : tabit"+ str(company_id))
             print("company :"+ str(company_id))
             print("app id  :"+ str(app_id))
             print()
